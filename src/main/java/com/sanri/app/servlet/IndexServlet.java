@@ -136,11 +136,11 @@ public class IndexServlet extends BaseServlet {
 
         List<ToolModel> last5MinutesCalls = new ArrayList<ToolModel>();
         Iterator<ToolModel> iterator = toolModels.iterator();
-        String env = System.getenv("env");
+        String env = System.getenv("env");if(StringUtils.isBlank(env)){env = "default";}
         while (iterator.hasNext()){
             ToolModel current = iterator.next();
             //根据当前系统环境来决定要展示哪些工具
-            if(StringUtils.isNotBlank(env) && !current.contains(env)){
+            if(!current.contains(env)){
                 iterator.remove();
                 continue;
             }

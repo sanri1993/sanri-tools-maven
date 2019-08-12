@@ -3,6 +3,7 @@ package com.sanri.app.translate;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import kafka.utils.Json;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,7 +61,7 @@ public class YoudaoEnglishTranslate implements Translate, EnglishTranslate {
     public Set<String> directTranslate(String source) {
         HashSet<String> values = new LinkedHashSet<String>();
 
-        Map<String,String> params = new HashMap<String,String>();
+        Map<String,Object> params = new HashMap<String,Object>();
         String q = source;
         String salt = String.valueOf(System.currentTimeMillis());
         params.put("from", "auto");
@@ -77,7 +78,7 @@ public class YoudaoEnglishTranslate implements Translate, EnglishTranslate {
 
         JSONObject jsonObject = null;
         try {
-            jsonObject = HttpUtil.getJSON(YOUDAO_URL, params);
+            jsonObject = HttpUtil.postJSON(YOUDAO_URL, new JSONObject(params));
             Integer errorCode = jsonObject.getInteger("errorCode");
             if(errorCode != 0){
                 logger.error("调用有道翻译出错:"+errorCode);

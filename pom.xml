@@ -275,13 +275,15 @@
             <groupId>com.taobao.diamond</groupId>
             <artifactId>diamond-client</artifactId>
             <version>2.0.5.5</version>
-            <systemPath>${project.basedir}/src/main/resources/diamond-client-2.0.5.5.jar</systemPath>
+<!--            <systemPath>${project.basedir}/src/main/resources/diamond-client-2.0.5.5.jar</systemPath>-->
+<!--            <scope>system</scope>-->
         </dependency>
         <dependency>
             <groupId>com.taobao.diamond</groupId>
             <artifactId>diamond-utils</artifactId>
             <version>2.0.5.5</version>
-            <systemPath>${project.basedir}/src/main/resources/diamond-utils-2.0.5.5.jar</systemPath>
+<!--            <systemPath>${project.basedir}/src/main/resources/diamond-utils-2.0.5.5.jar</systemPath>-->
+<!--            <scope>system</scope>-->
         </dependency>
 
         <!--ik 分词器-->
@@ -289,7 +291,8 @@
           <groupId>org.wltea.analyzer</groupId>
           <artifactId>IKAnalyzer</artifactId>
           <version>2012FF_u1</version>
-           <systemPath>${project.basedir}/src/main/resources/IKAnalyzer2012FF_u1.jar</systemPath>
+<!--           <systemPath>${project.basedir}/src/main/resources/IKAnalyzer2012FF_u1.jar</systemPath>-->
+<!--           <scope>system</scope>-->
         </dependency>
         <!--jcseg 分词器 -->
         <dependency>
@@ -413,31 +416,31 @@
             </plugin>
 
             <!-- 内嵌 tomcat 插件-->
-            <plugin>
-                <groupId>org.apache.tomcat.maven</groupId>
-                <artifactId>tomcat8-maven-plugin</artifactId>
-                <version>3.0-r1655215</version>
-                <configuration>
-                    <path>/sanritools</path>
-                    <port>8081</port>
-                </configuration>
-            </plugin>
-            <!--jetty 插件-->
 <!--            <plugin>-->
-<!--                <groupId>org.eclipse.jetty</groupId>-->
-<!--                <artifactId>jetty-maven-plugin</artifactId>-->
-<!--                <version>9.2.11.v20150529</version>-->
+<!--                <groupId>org.apache.tomcat.maven</groupId>-->
+<!--                <artifactId>tomcat8-maven-plugin</artifactId>-->
+<!--                <version>3.0-r1655215</version>-->
 <!--                <configuration>-->
-<!--                    <httpConnector>-->
-<!--                        <port>8081</port>-->
-<!--                    </httpConnector>-->
-<!--                    <webAppSourceDirectory>src/main/webapp</webAppSourceDirectory>-->
-<!--                    <scanIntervalSeconds>10</scanIntervalSeconds>-->
-<!--                    <webApp>-->
-<!--                        <contextPath>/sanritools</contextPath>-->
-<!--                    </webApp>-->
+<!--                    <path>/sanritools</path>-->
+<!--                    <port>8081</port>-->
 <!--                </configuration>-->
 <!--            </plugin>-->
+            <!--jetty 插件-->
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>9.2.11.v20150529</version>
+                <configuration>
+                    <httpConnector>
+                        <port>8081</port>
+                    </httpConnector>
+                    <webAppSourceDirectory>src/main/webapp</webAppSourceDirectory>
+                    <scanIntervalSeconds>10</scanIntervalSeconds>
+                    <webApp>
+                        <contextPath>/sanritools</contextPath>
+                    </webApp>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
