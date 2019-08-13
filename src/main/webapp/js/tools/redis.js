@@ -1,4 +1,4 @@
-define(['util'],function (util) {
+define(['util','dialog'],function (util,dialog) {
     var redisclient = {};
     var apis = {
         connNames:'/file/manager/simpleConfigNames',
@@ -10,7 +10,7 @@ define(['util'],function (util) {
 
     function initApis(){
         var methods = ['redisInfo','dbs','dbSize','scan','keys','lrange','zscan','hscan','type','readValue','readHashValue','keyLength','ttl','pttl','batchDelete'];
-        methods.each(function (method) {
+        methods.forEach(function (method) {
             apis[method] = '/redis/'+method;
         });
     }
@@ -65,7 +65,9 @@ define(['util'],function (util) {
      * 加载所有数据库
      */
     function loadDatabases() {
-
+        util.requestData(apis.dbs,{name:redisclient.conn},function (dbs) {
+           console.log(dbs);
+        });
     }
     
     function bindEvent() {
@@ -79,10 +81,10 @@ define(['util'],function (util) {
          */
         function switchConn() {
             var conn = $(this).data('value');
-            redis.conn = conn;
+            redisclient.conn = conn;
 
             $('#connect>button>span:eq(0)').text(conn);
-            util.requestData(apis.detail,{modul:'zookeeper',baseName:conn},function (address) {
+            util.requestData(apis.detail,{modul:modul,baseName:conn},function (address) {
                 $('#connect').next('input').val(address);
             });
             $('#connect>.dropdown-menu').dropdown('toggle');
@@ -98,16 +100,16 @@ define(['util'],function (util) {
         function newconn() {
             dialog.create('新连接')
                 .setContent($('#newconn'))
-                .setWidthHeight('90%','40%')
+                .setWidthHeight('60%','300px')
                 .addBtn({type:'yes',text:'确定',handler:function(index, layero){
                         var params = util.serialize2Json($('#newconn>form').serialize());
                         if(!params.name || !params.connectStrings){
                             layer.msg('请将信息填写完整');
                             return ;
                         }
-                        params.modul = 'zookeeper';
+                        params.modul = modul;
                         params.baseName = params.name;
-                        params.content = params.connectStrings;
+                        params.content = JSON.stringify({connectStrings:params.connectStrings,auth:params.auth});
                         util.requestData(apis.createConn,params,function () {
                             layer.close(index);
 

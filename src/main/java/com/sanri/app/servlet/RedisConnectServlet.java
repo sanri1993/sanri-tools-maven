@@ -353,7 +353,7 @@ public class RedisConnectServlet extends BaseServlet {
             String redisConnInfo = fileManagerServlet.readConfig(modul, name);
 
             JSONObject jsonObject = JSONObject.parseObject(redisConnInfo);
-            String address = jsonObject.getString("address");
+            String address = jsonObject.getString("connectStrings");
             String auth = jsonObject.getString("auth");
 
             String[] split = StringUtils.split(address, ':');
