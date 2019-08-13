@@ -113,6 +113,7 @@ public class IndexServlet extends BaseServlet {
     public int addTool(String url){
         ToolModel toolModel = toolModelMap.get(url);
         String env = System.getenv("env");
+        if(StringUtils.isBlank(env)){env = "default" ;}
         toolModel.addEnv(env);
         return 0;
     }
@@ -125,6 +126,7 @@ public class IndexServlet extends BaseServlet {
     public int removeTool(String url){
         ToolModel toolModel = toolModelMap.get(url);
         String env = System.getenv("env");
+        if(StringUtils.isBlank(env)){env = "default" ;}
         toolModel.removeEnv(env);
         return 0;
     }

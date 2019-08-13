@@ -233,6 +233,8 @@ public final class PropertyEditUtil {
 					
 					PropertyDescriptor destPropertyDescriptor = entry.getValue();
 					PropertyDescriptor sourcePropertyDescriptor = sourcePropertyDescriptorMap.get(key);
+					// 源数据列中没有这个字段
+					if(sourcePropertyDescriptor == null){continue;}
 					
 					if(sourcePropertyDescriptor != null && destPropertyDescriptor != null 
 							&& sourcePropertyDescriptor.getPropertyType() == destPropertyDescriptor.getPropertyType()){

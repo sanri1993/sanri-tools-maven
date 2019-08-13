@@ -31,6 +31,9 @@ public class BaiduEnglishTranslate implements Translate ,EnglishTranslate{
         if(CollectionUtils.isEmpty(needTranslateWords)){return ;}
 
         for (String needTranslateWord : needTranslateWords) {
+            //因为百度修改 qps = 1 ，需要降低使用频率 ；
+            try {Thread.sleep(1000);} catch (InterruptedException e) {}
+
             translateWord(needTranslateWord,translateCharSequence);
         }
 

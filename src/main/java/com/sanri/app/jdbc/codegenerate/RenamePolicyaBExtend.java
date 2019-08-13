@@ -16,7 +16,7 @@ public class RenamePolicyaBExtend extends RenamePolicyDefault {
     @Override
     public String mapperPropertyName(String columnName) {
         String propertyName = super.mapperPropertyName(columnName);
-        if((propertyName.endsWith("id") || propertyName.endsWith("no")) && propertyName.length() != 2){
+        if((propertyName.endsWith("id") || propertyName.endsWith("no")) && propertyName.length() != 2 && !"uuid".equals(propertyName)){
             String firstPart = propertyName.substring(0,propertyName.length() - 2);
             String lastpart = propertyName.substring(firstPart.length());
             return firstPart+StringUtils.capitalize(lastpart);

@@ -2,11 +2,7 @@ package com.sanri.app.servlet;
 
 import com.sanri.app.BaseServlet;
 import com.sanri.app.postman.ZooNodeACL;
-import com.sanri.app.serializer.FastJsonSerializer;
-import com.sanri.app.serializer.HessianSerializer;
-import com.sanri.app.serializer.JdkSerializer;
-import com.sanri.app.serializer.KryoSerializer;
-import com.sanri.app.serializer.StringSerializer;
+import com.sanri.app.serializer.*;
 import com.sanri.frame.RequestMapping;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.serialize.BytesPushThroughSerializer;
@@ -40,6 +36,7 @@ public class ZkServlet extends BaseServlet {
     private static KryoSerializer kryoSerializer = new KryoSerializer();
     private static JdkSerializer jdkSerializer = new JdkSerializer();
     private static HessianSerializer hessianSerializer = new HessianSerializer();
+    private static HexSerializer hexSerializer = new HexSerializer();
 
     static Map<String,ZkSerializer> zkSerializerMap = new LinkedHashMap<>();
     static {
@@ -49,6 +46,7 @@ public class ZkServlet extends BaseServlet {
         zkSerializerMap.put("jdk",jdkSerializer);
         zkSerializerMap.put("kryo",kryoSerializer);
         zkSerializerMap.put("hessian",hessianSerializer);
+        zkSerializerMap.put("hex",hexSerializer);
     }
 
     /**

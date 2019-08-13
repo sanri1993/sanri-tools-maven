@@ -42,8 +42,17 @@ define(['util', 'dialog', 'icheck'], function (util, dialog) {
             layer.msg('必选一个英语翻译获取命名效果')
             return;
         }
+        var index = layer.load(1, {
+            shade: [0.1,'#fff']
+        });
+        let beginTime = new Date().getTime();
         util.requestData(apis.translate, {biz: biz, orginChars: text, englishs: englishs}, function (results) {
             $('#result').val(results.join('\n'));
+
+            $('#namerequest>b').text('取名耗时: ' + (new Date().getTime() - beginTime) + ' ms');
+            layer.close(index);
+        },function () {
+            layer.close(index);
         });
     }
 

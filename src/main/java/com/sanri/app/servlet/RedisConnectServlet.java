@@ -2,12 +2,10 @@ package com.sanri.app.servlet;
 
 import com.alibaba.fastjson.JSONObject;
 import com.sanri.app.BaseServlet;
+import com.sanri.frame.DispatchServlet;
 import com.sanri.frame.RequestMapping;
-import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanParams;
@@ -15,45 +13,15 @@ import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.Tuple;
 import sanri.utils.NumberUtil;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static com.sanri.app.servlet.ZkServlet.zkSerializerMap;
 
 @RequestMapping("/redis")
 public class RedisConnectServlet extends BaseServlet {
-    static File redisConfigDir;
-    static {
-       redisConfigDir = mkConfigPath("redis");
-    }
-
     static Map<String,Jedis> jedisMap = new HashMap<String, Jedis>();
-
-    /**
-     * 写入 redis 连接信息
-     * @param name
-     * @param address
-     * @return
-     * @throws IOException
-     */
-    public int writeConfig(String name,String address,String auth) throws IOException {
-        File config = new File(redisConfigDir,name);
-        Map<String,String> obj = new HashMap<String, String>();
-        obj.put("address",address);
-        obj.put("auth",auth);
-        FileUtils.writeStringToFile(config,JSONObject.toJSONString(obj));
-        return 0;
-    }
-
-    public String [] connNames(){
-        return redisConfigDir.list();
-    }
-    public String detail(String name) throws IOException {
-       File config = new File(redisConfigDir,name);
-       return FileUtils.readFileToString(config);
-    }
+    private String modul = "redis";
 
     /**
      * 获取连接信息
@@ -111,6 +79,20 @@ public class RedisConnectServlet extends BaseServlet {
     }
 
     /**
+     * 查找与模式匹配的 key
+     * @param name
+     * @param index
+     * @param pattern
+     * @throws IOException
+     * @return
+     */
+    public Set<String> keys(String name, String index, String pattern) throws IOException {
+        Jedis jedis = jedis(name);jedis.select(NumberUtil.toInt(index));
+        Set<String> keys = jedis.keys(pattern);
+        return keys;
+    }
+
+    /**
      * 查看 list 值列表
      * @param name
      * @param index
@@ -125,7 +107,7 @@ public class RedisConnectServlet extends BaseServlet {
         Jedis jedis = jedis(name);jedis.select(NumberUtil.toInt(index));
         long end = (offset + 1) * limit;
 
-        ZkSerializer zkSerializer = ZkServlet.zkSerializerMap.get(serialize);
+        ZkSerializer zkSerializer = zkSerializerMap.get(serialize);
         if(zkSerializer == null){zkSerializer = hexSerizlize;}
 
         List<byte[]> lrange = jedis.lrange(key.getBytes(charset), offset, end);
@@ -156,7 +138,7 @@ public class RedisConnectServlet extends BaseServlet {
     public ScanResult<Object> zscan(String name,String index,String key,String pattern, String cursor, int limit,String serialize) throws IOException {
         Jedis jedis = jedis(name);jedis.select(NumberUtil.toInt(index));
 
-        ZkSerializer zkSerializer = ZkServlet.zkSerializerMap.get(serialize);
+        ZkSerializer zkSerializer = zkSerializerMap.get(serialize);
         if(zkSerializer == null){zkSerializer = hexSerizlize;}
 
         ScanParams scanParams = new ScanParams();
@@ -231,7 +213,7 @@ public class RedisConnectServlet extends BaseServlet {
         //获取当前键类型
         String type = type(name, index, key);
         RedisType redisType = RedisType.parse(type);
-        ZkSerializer zkSerializer = ZkServlet.zkSerializerMap.get(serialize);
+        ZkSerializer zkSerializer = zkSerializerMap.get(serialize);
         if(zkSerializer == null){zkSerializer = hexSerizlize;}
 
         if(redisType == RedisType.string){
@@ -255,7 +237,7 @@ public class RedisConnectServlet extends BaseServlet {
     public Object readHashValue(String name,String index,String key,String field,String serialize) throws IOException {
          Jedis jedis = jedis(name);jedis.select(NumberUtil.toInt(index));
 
-         ZkSerializer zkSerializer = ZkServlet.zkSerializerMap.get(serialize);
+         ZkSerializer zkSerializer = zkSerializerMap.get(serialize);
          if(zkSerializer == null){zkSerializer = hexSerizlize;}
 
         byte[] value = jedis.hget(key.getBytes(charset), field.getBytes(charset));
@@ -367,7 +349,10 @@ public class RedisConnectServlet extends BaseServlet {
     Jedis jedis(String name) throws IOException {
         Jedis jedis = jedisMap.get(name);
         if(jedis == null){
-            JSONObject jsonObject = JSONObject.parseObject(detail(name));
+            FileManagerServlet fileManagerServlet = DispatchServlet.getServlet(FileManagerServlet.class);
+            String redisConnInfo = fileManagerServlet.readConfig(modul, name);
+
+            JSONObject jsonObject = JSONObject.parseObject(redisConnInfo);
             String address = jsonObject.getString("address");
             String auth = jsonObject.getString("auth");
 
@@ -381,16 +366,6 @@ public class RedisConnectServlet extends BaseServlet {
         return jedis;
     }
 
-    private static ZkSerializer hexSerizlize = new HexDeserialize();
+    private static ZkSerializer hexSerizlize = zkSerializerMap.get("hex");
 
-    private static class HexDeserialize implements ZkSerializer{
-        @Override
-        public byte[] serialize(Object o) throws ZkMarshallingError {
-            throw new IllegalStateException("未实现序列化");
-        }
-        @Override
-        public Object deserialize(byte[] bytes) throws ZkMarshallingError {
-            return Hex.encodeHex(bytes);
-        }
-    }
 }

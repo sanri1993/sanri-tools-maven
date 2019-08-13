@@ -514,7 +514,7 @@ public class CodeGenerateServlet extends BaseServlet {
 	 * @return
 	 */
 	final String modul = "tableTemplate";
-	Pattern pattern = Pattern.compile("public\\s+class\\s+(\\w+)");
+	Pattern pattern = Pattern.compile("public\\s+(class|interface)\\s+(\\w+)");
 	public String templateConvert(String ticket,String templateName,String connName,String schemaName,String tableName) throws IOException {
 		File codePath = null;
 		if(StringUtils.isBlank(ticket)){
@@ -537,7 +537,7 @@ public class CodeGenerateServlet extends BaseServlet {
 		Matcher matcher = pattern.matcher(formatCode);
 		String publicClassName = tableName+'.'+templateName;
 		if(matcher.find()){
-			publicClassName = matcher.group(1);
+			publicClassName = matcher.group(2);
 		}
 		return publicClassName;
 	}

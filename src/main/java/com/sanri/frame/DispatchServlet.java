@@ -371,9 +371,19 @@ public class DispatchServlet extends HttpServlet {
 				return ;
 			}else{
 				//执行调用
-				invoke("/"+methodName, request, response);
+				InvokeResult invoke = invoke("/" + methodName, request, response);
 				String ip = BaseServlet.remortIPInfo(request);
-				logger.info(ip +" 调用 " +"方法 /" + methodName + " 调用时间: " + (System.currentTimeMillis() - startTime) + " ms");
+
+				//对于文件管理方法特殊标记是哪个模块的，方法查找问题
+				if(methodName.startsWith("file/manager")){
+					Map<String, Object> paramsValues = invoke.getParamsValues();
+					methodName = methodName+"?modul=" + paramsValues.get("modul");
+				}
+				Method method = invoke.getMethod();
+				IgnoreSpendTime ignoreSpendTime = method.getAnnotation(IgnoreSpendTime.class);
+				if(ignoreSpendTime == null){
+					logger.info(ip +" 调用 " +"方法 /" + methodName + " 调用时间: " + (System.currentTimeMillis() - startTime) + " ms");
+				}
 			}
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
@@ -539,10 +549,10 @@ public class DispatchServlet extends HttpServlet {
 	 * @throws FileUploadException 
 	 * @throws ServletException 
 	 */
-	private void invoke(String methodName, HttpServletRequest request, HttpServletResponse response) throws IllegalArgumentException, IOException, FileUploadException, ServletException {
+	private InvokeResult invoke(String methodName, HttpServletRequest request, HttpServletResponse response) throws IllegalArgumentException, IOException, FileUploadException, ServletException {
 		NativeMethod nativeMethod = mappings.get(methodName);
 		if(nativeMethod == null){
-			throw new ServletException("找不到方法:"+methodName);		//add by sanri at 2017/04/24 解决找不到映射问题
+			throw new ServletException("can not find method :"+methodName);		//add by sanri at 2017/04/24 解决找不到映射问题
 		}
 		//解析参数
 		JSONObject jsonObject = parserParams(request, response,nativeMethod);
@@ -594,8 +604,9 @@ public class DispatchServlet extends HttpServlet {
 //			Object newInstance = callClass.newInstance();			//每次调用方法都是新对象,不存在线程安全问题
 			Object newInstance = CLASS_INSTANCE.get(callClass.getSimpleName());
 			if(newInstance == null){
-				logger.error("找不到类实例:"+callClass.getSimpleName());
-				return ;
+				String reson = "can not find instance :"+callClass.getSimpleName();
+				logger.error(reson);
+				return InvokeResult.error(reson);
 			}
 			method.setAccessible(true);
 			Object returnValue = null;
@@ -615,6 +626,10 @@ public class DispatchServlet extends HttpServlet {
 			if(returnType == void.class){
 				response.setStatus(200);
 			}
+
+			InvokeResult invokeResult = new InvokeResult(method);
+			invokeResult.setParamsValues(paramsValues);
+			return invokeResult;
 		} catch (InstantiationException e) {
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
@@ -626,6 +641,9 @@ public class DispatchServlet extends HttpServlet {
 		} catch (InvocationTargetException e){
 			Throwable targetException = e.getTargetException();
 			handleException(request, response, writer, targetException);
+
+			//有捕获的程序异常
+			return InvokeResult.error(targetException.getMessage());
 		}finally{
 			if(writer != null){
 				try {
@@ -635,6 +653,8 @@ public class DispatchServlet extends HttpServlet {
 				}
 			}
 		}
+
+		return InvokeResult.error("未捕获的程序异常");
 	}
 
 	/**
