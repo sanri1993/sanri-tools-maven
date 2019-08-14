@@ -372,6 +372,10 @@ public class DispatchServlet extends HttpServlet {
 			}else{
 				//执行调用
 				InvokeResult invoke = invoke("/" + methodName, request, response);
+				if(!invoke.isSuccess()){
+					logger.error("方法 "+methodName + " 执行失败,原因为:"+invoke.getReson());
+					return ;
+				}
 				String ip = BaseServlet.remortIPInfo(request);
 
 				//对于文件管理方法特殊标记是哪个模块的，方法查找问题

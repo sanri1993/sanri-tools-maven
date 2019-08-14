@@ -46,4 +46,8 @@ public class InvokeResult {
     public void setParamsValues(Map<String, Object> paramsValues) {
         this.paramsValues = paramsValues;
     }
+
+    public String getReson() {
+        return reson;
+    }
 }
