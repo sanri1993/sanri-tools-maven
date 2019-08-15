@@ -10,6 +10,29 @@
     <link rel="stylesheet" href="../../css/animate.min.css" />
     <link rel="stylesheet" href="../../css/appbase.css" />
     <link rel="stylesheet" href="../../css/style.css" />
+    <style>
+        .part-info{
+            white-space: pre-wrap;
+            line-height: 1.5em;
+            font-size: 14px;
+        }
+        .data-value{
+            white-space: normal;
+            overflow: auto;
+            height: 450px;
+            padding: 8px;
+            border: 1px dotted grey;
+        }
+
+        .tab-pane{
+            overflow: auto;
+        }
+
+        #datashow p.form-control-static{
+            overflow: auto;
+            white-space: nowrap;
+        }
+    </style>
 </head>
 <body>
 <nav class="navbar navbar-default">
@@ -47,13 +70,26 @@
 </div>
 
 <div class="container-fluid">
-    <div>
-        <ul class="nav nav-tabs">
-            <li class="active"><a href="#info" data-toggle="tab">全局信息</a></li>
-            <li ><a href="#info" data-toggle="tab">0</a></li>
-            <li ><a href="#info" data-toggle="tab">1</a></li>
-        </ul>
+    <div class="panel panel-default" style="height: 600px;">
+        <div class="panel-heading">数据库信息展示</div>
+        <div class="panel-body">
+            <div class="col-xs-8" id="redisDataShow">
+
+            </div>
+            <div class="col-xs-4" id="datashow">
+                <div class="col-xs-4 col-md-4 col-lg-3 " style="padding-left: 0;padding-right: 0;">
+                    <select class="form-control"  name="deserialize" size="11">
+                    </select>
+                </div>
+                <div  class="col-xs-8 col-md-8 col-lg-9 " >
+                    <p class="form-control-static"></p>
+                    <p class="form-control-static"></p>
+                    <div class="data-value"></div>
+                </div>
+            </div>
+        </div>
     </div>
+
 </div>
 
 <!--新连接-->
@@ -82,6 +118,71 @@
     </form>
 </div>
 
+<!--key 信息表格模板 -->
+<script type="text/html" id="keysTemplate">
+    {{each redisKeyResults as redisKeyResult}}
+    <tr key="{{redisKeyResult.key}}" type="{{redisKeyResult.type}}">
+        <td>{{redisKeyResult.key}}</td>
+        <td>{{redisKeyResult.type}}</td>
+        <td>{{redisKeyResult.ttl}}</td>
+        <td>{{redisKeyResult.pttl}}</td>
+        <td>{{redisKeyResult.length}}</td>
+    </tr>
+    {{/each}}
+</script>
+
+<!-- redis 总览信息标签页 -->
+<script type="text/html" id="infoTemplate">
+    <ul class="nav nav-tabs">
+        {{each infos as info key}}
+        <li ><a href="#info{{key}}" data-toggle="tab">{{key}}</a></li>
+        {{/each}}
+    </ul>
+    <div class="tab-content">
+        {{each infos as info key}}
+        <div class="tab-pane part-info" id="info{{key}}">{{info}}</div>
+        {{/each}}
+    </div>
+</script>
+
+<!--顶层 tab 标签页模板-->
+<script type="text/html" id="tabnavTemplate">
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#info" data-toggle="tab">全局信息</a></li>
+        {{each dbs as dbSize index}}
+        <li ><a href="#database{{index}}" index = "{{index}}" dbSize="{{dbSize}}" data-toggle="tab">{{index}}->{{dbSize}}</a></li>
+        {{/each}}
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane active" id="info"></div>
+        {{each dbs as dbSize index}}
+        <div class="tab-pane" id="database{{index}}" index = "{{index}}" dbSize="{{dbSize}}">
+            <div class="form-group margin-top">
+                <div class="input-group input-group-sm">
+                    <input type="text" class="form-control" spellcheck="false" autocomplete="off"  placeholder="搜索key"/>
+                    <div class="input-group-btn"><button class="btn btn-primary"><i class="fa fa-search"></i>搜索</button></div>
+                </div>
+            </div>
+
+            <table class="table table-bordered table-hover table-striped">
+                <thead>
+                <tr>
+                    <th>key</th>
+                    <th>type</th>
+                    <th>ttl</th>
+                    <th>pttl</th>
+                    <th>length</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+        {{/each}}
+    </div>
+</script>
 <script type="text/javascript" src="../../js/requirejs2.1.11-min.js"></script>
 <script type="text/javascript" src="../config.js"></script>
 <script type="text/javascript">

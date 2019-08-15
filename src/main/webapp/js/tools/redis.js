@@ -1,4 +1,4 @@
-define(['util','dialog'],function (util,dialog) {
+define(['util','dialog','template'],function (util,dialog,template) {
     var redisclient = {};
     var apis = {
         connNames:'/file/manager/simpleConfigNames',
@@ -9,7 +9,7 @@ define(['util','dialog'],function (util,dialog) {
     var modul = 'redis';
 
     function initApis(){
-        var methods = ['redisInfo','dbs','dbSize','scan','keys','lrange','zscan','hscan','type','readValue','readHashValue','keyLength','ttl','pttl','batchDelete'];
+        var methods = ['redisInfo','dbs','scan','readValue','readHashValue','batchDelete','hscan'];
         methods.forEach(function (method) {
             apis[method] = '/redis/'+method;
         });
@@ -33,7 +33,7 @@ define(['util','dialog'],function (util,dialog) {
      */
     function loadSerializes() {
         util.requestData(apis.serializes,function (serializes) {
-            var $serializes =  $('#nodedata').find('select[name=deserialize]').empty();
+            var $serializes =  $('#datashow').find('select[name=deserialize]').empty();
             for(var i=0;i<serializes.length;i++){
                 $serializes.append('<option value="'+serializes[i]+'">'+serializes[i]+'</option>')
             }
@@ -65,16 +65,118 @@ define(['util','dialog'],function (util,dialog) {
      * 加载所有数据库
      */
     function loadDatabases() {
+        //加载所有库信息
         util.requestData(apis.dbs,{name:redisclient.conn},function (dbs) {
-           console.log(dbs);
+            var htmlCode = template('tabnavTemplate',{dbs:dbs});
+            $('#redisDataShow').html(htmlCode);
+
+            //加载 redis 连接总信息
+            util.requestData(apis.redisInfo,{name:redisclient.conn},function (infos) {
+                // $('#redisDataShow').find('#info').html(info);
+                var htmlCode = template('infoTemplate',{infos:infos});
+                var $info = $('#redisDataShow').find('#info');
+                $info.html(htmlCode);
+                $info.find('li:first').addClass('active');
+                $info.find('.tab-pane:first').addClass('active')
+            });
+        });
+    }
+
+    function readValue(index, key) {
+        $('#datashow').find('p:first').text(index);
+        $('#datashow').find('p:last').text(key);
+        var deserialize = $('#datashow').find('select[name=deserialize]').val();
+        util.requestData(apis.readValue,{name:redisclient.conn,index:index,key:key,serialize:deserialize},function (value) {
+            $('#datashow').find('.data-value').text(value);
+        });
+    }
+
+    function readHashValue(index, key) {
+        $('#datashow').find('p:first').text(index);
+        $('#datashow').find('p:last').text(key);
+        var deserialize = $('#datashow').find('select[name=deserialize]').val();
+        util.requestData(apis.hscan,{name:redisclient.conn,index:index,key:key,serialize:deserialize},function (value) {
+
+        })
+    }
+
+    /**
+     * 搜索和下一页合一； 初始搜索 cursor 写 0
+     * @param $tabpane
+     * @param cursor
+     */
+    function search($tabpane,cursor) {
+        var index = $tabpane.attr('index');
+        var dbSize = $tabpane.attr('dbSize');
+        if(dbSize == '0')return ;
+
+        var pattern = $tabpane.find('input').val().trim();
+        util.requestData(apis.scan,{name:redisclient.conn,index:index,pattern:pattern,cursor:cursor,limit:10},function (keys) {
+            var htmlCode = template('keysTemplate',{redisKeyResults:keys});
+            $tabpane.find('tbody').html(htmlCode);
         });
     }
     
     function bindEvent() {
         var events = [{parent:'#connect>.dropdown-menu',selector:'li',types:['click'],handler:switchConn},
-            {selector:'#newconnbtn',types:['click'],handler:newconn}];
+            {selector:'#newconnbtn',types:['click'],handler:newconn},
+            {parent:'#redisDataShow',selector:'>ul>li>a[data-toggle="tab"]',types:['shown.bs.tab'],handler:showTab},
+            {parent:'#redisDataShow',selector:'input',types:['keydown'],handler:keydownSearch},
+            {parent:'#redisDataShow',selector:'button',types:['click'],handler:clickSearch},
+            {parent:'#redisDataShow',selector:'tr',types:['click'],handler:clickTrReadValue},
+            {selector:'#datashow select[name=deserialize]',types:['change'],handler:switchDeserialize}];
         
         util.regPageEvents(events);
+
+        /**
+         * 切换序列化工具
+         */
+        function switchDeserialize() {
+            var index = $('#datashow').find('p:first').text();
+            var key = $('#datashow').find('p:last').text();
+            readValue(index,key);
+        }
+
+        /**
+         * 点击表格行读取数据
+         */
+        function clickTrReadValue() {
+            var $tabpane = $(this).closest('.tab-pane');
+            var index = $tabpane.attr('index');
+            var key = $(this).attr('key');
+            var type = $(this).attr('type');
+            if(type == 'hash'){
+                readHashValue(index,key);
+                return ;
+            }
+            readValue(index,key)
+        }
+
+        function keydownSearch(event) {
+            var event = event || window.event;
+            if(event.keyCode == 13) {
+                var $tabpane = $(this).closest('.tab-pane');
+                search($tabpane, 0);
+            }
+        }
+
+        function clickSearch() {
+            var $tabpane = $(this).closest('.tab-pane');
+            search($tabpane,0);
+        }
+
+        /**
+         * 显示对应数据库连接组件
+         */
+        function showTab(e) {
+            var $target = $(e.target);
+            var tabpaneId = $target.attr('href').substring(1);
+            var $tabpane = $('#'+tabpaneId);
+
+            if(tabpaneId != 'info'){
+                search($tabpane,0);
+            }
+        }
 
         /**
          * 切换连接 
@@ -89,9 +191,7 @@ define(['util','dialog'],function (util,dialog) {
             });
             $('#connect>.dropdown-menu').dropdown('toggle');
 
-            loadConns(function () {
-                loadDatabases();
-            });
+            loadDatabases();
         }
 
         /**

@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
+import sanri.utils.NumberUtil;
 import sanri.utils.PathUtil;
 
 import javax.servlet.ServletConfig;
@@ -588,9 +589,9 @@ public class DispatchServlet extends HttpServlet {
 					}else if(valueClazz.isPrimitive()){
 						String stringValue = ObjectUtils.toString(object);
 						if(valueClazz == int.class){
-							paramsValues.put(paramName,Integer.parseInt(stringValue));
+							paramsValues.put(paramName, NumberUtil.toInt(stringValue,0));
 						}else if(valueClazz == long.class){
-							paramsValues.put(paramName,Long.parseLong(stringValue));
+							paramsValues.put(paramName,NumberUtil.toLong(stringValue,0));
 						}else if(valueClazz == double.class){
 							paramsValues.put(paramName,Double.parseDouble(stringValue));
 						}else if(valueClazz == Float.class){
