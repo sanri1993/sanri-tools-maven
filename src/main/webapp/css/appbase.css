@@ -35,6 +35,11 @@ input[type="submit"],input[type="reset"],input[type="button"],input[type=date],b
     -webkit-appearance:none; /* Safari 和 Chrome */
     /*去掉苹果的默认UI来渲染按钮 、解决部分手机浏览器对border：none无效办法*/
 }
+/*div li 等容器类元素，添加文本处理*/
+div,li{
+    word-break: break-all;
+    overflow: auto;
+}
 /*clearfix*/
 .clearfix:after {
     visibility: hidden;
@@ -78,8 +83,8 @@ input, textarea, select {
 }
 /*滚动条默认样式,重置浏览器默认样式*/
 ::-webkit-scrollbar {
-    width: 6px;
-    height:6px;
+    width: 7px;
+    height: 7px;
     background-color: #F5F5F5;
 }
 ::-webkit-scrollbar-thumb {
