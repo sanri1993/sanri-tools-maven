@@ -61,7 +61,7 @@ public class YoudaoEnglishTranslate implements Translate, EnglishTranslate {
     public Set<String> directTranslate(String source) {
         HashSet<String> values = new LinkedHashSet<String>();
 
-        Map<String,Object> params = new HashMap<String,Object>();
+        Map<String,String> params = new HashMap<String,String>();
         String q = source;
         String salt = String.valueOf(System.currentTimeMillis());
         params.put("from", "auto");
@@ -78,7 +78,9 @@ public class YoudaoEnglishTranslate implements Translate, EnglishTranslate {
 
         JSONObject jsonObject = null;
         try {
-            jsonObject = HttpUtil.postJSON(YOUDAO_URL, new JSONObject(params));
+//            jsonObject = HttpUtil.postJSON(YOUDAO_URL, new JSONObject(params));
+            String data = HttpUtil.postFormData(YOUDAO_URL, params);
+            jsonObject = JSONObject.parseObject(data);
             Integer errorCode = jsonObject.getInteger("errorCode");
             if(errorCode != 0){
                 logger.error("调用有道翻译出错:"+errorCode);

@@ -2,6 +2,9 @@ define(['util'],function (util) {
     var distill = {};
     var regexs = {
         'java属性':{pattern:/(private|protected)\s+\w+\s+(\w+);/,index:2},
+        'java 属性值':{pattern:/(private|protected|public).*?=\s*(.+?);/,index:2},
+        'java 公共属性':{pattern:/public.*?\s(\w+)\s=/,index:1},
+        '文档注释':{pattern:/\* (.*?)\n/,index:1},
         '属性列':{pattern: /property="(\w+)"/,index:1},
     '数据库列':{pattern:/column="(\w+)"/,index:1},
         'temp':{pattern:/\w\.(\w+),/,index:1},
