@@ -27,6 +27,14 @@ public class Novel {
     private String chapterUrl;
     private String netSource;
 
+    public Novel() {
+    }
+
+    public Novel(String name, String chapterUrl) {
+        this.name = name;
+        this.chapterUrl = chapterUrl;
+    }
+
     public String getNetSource() {
         return netSource;
     }
