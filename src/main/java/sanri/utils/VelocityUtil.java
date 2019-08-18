@@ -12,9 +12,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateFormatUtils;
-import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 

@@ -1,9 +1,9 @@
 package com.sanri.app.jsoup.novel;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.cglib.core.ReflectUtils;

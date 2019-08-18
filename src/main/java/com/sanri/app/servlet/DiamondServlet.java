@@ -11,7 +11,7 @@ import com.taobao.diamond.manager.impl.DefaultDiamondManager;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import sanri.utils.HttpUtil;
 
 import java.io.IOException;

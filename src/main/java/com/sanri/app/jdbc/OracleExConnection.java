@@ -7,7 +7,7 @@ import oracle.jdbc.pool.OracleDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
-import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import sanri.utils.PropertyEditUtil;
 
 import javax.sql.DataSource;

@@ -1,7 +1,7 @@
 package learntest;
 
 import it.sauronsoftware.jave.Encoder;
-import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import java.io.File;
 import java.io.FileInputStream;

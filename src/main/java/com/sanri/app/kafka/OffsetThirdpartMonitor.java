@@ -3,7 +3,7 @@ package com.sanri.app.kafka;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.sanri.app.servlet.KafkaServlet;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import sanri.utils.HttpUtil;
 
 import java.io.IOException;

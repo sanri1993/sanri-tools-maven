@@ -3,7 +3,7 @@ package com.sanri.app.servlet;
 import com.sanri.app.BaseServlet;
 import com.sanri.app.translate.*;
 import com.sanri.frame.RequestMapping;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;

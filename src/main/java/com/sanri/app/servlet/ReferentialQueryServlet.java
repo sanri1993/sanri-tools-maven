@@ -8,7 +8,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapListHandler;
-import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;

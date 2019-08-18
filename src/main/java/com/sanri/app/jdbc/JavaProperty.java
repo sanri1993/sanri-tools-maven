@@ -1,6 +1,6 @@
 package com.sanri.app.jdbc;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 数据映射到 java 属性列信息，用于代码生成

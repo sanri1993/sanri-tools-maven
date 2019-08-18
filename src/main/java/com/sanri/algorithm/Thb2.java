@@ -2,7 +2,7 @@ package com.sanri.algorithm;
 
 import java.util.Random;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 /**
  * 
  * 创建时间:2016-10-2上午9:02:56<br/>

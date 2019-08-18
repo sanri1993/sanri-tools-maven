@@ -4,7 +4,7 @@ import com.sanri.app.jdbc.Column;
 import com.sanri.app.jdbc.MysqlExConnection;
 import com.sanri.app.jdbc.Table;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import sanri.utils.RegexValidate;
 
 import java.io.File;

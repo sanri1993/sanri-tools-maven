@@ -5,7 +5,7 @@ import com.sanri.app.postman.JdbcConnDetail;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang3.ObjectUtils;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

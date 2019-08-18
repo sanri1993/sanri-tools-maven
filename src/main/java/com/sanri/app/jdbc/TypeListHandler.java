@@ -1,7 +1,7 @@
 package com.sanri.app.jdbc;
 
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -1,6 +1,6 @@
 package minitest;
 
-import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.junit.Test;
 
 import java.util.Calendar;

@@ -10,7 +10,7 @@ import javax.wsdl.BindingOperation;
 import javax.wsdl.Operation;
 import javax.wsdl.Port;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

@@ -3,7 +3,7 @@ package com.sanri.app;
 import com.sanri.frame.HandlerExceptionResolver;
 import com.sanri.frame.ModelAndView;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;

@@ -28,7 +28,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.swing.ImageIcon;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import sanri.utils.RegexValidate;
 import sanri.utils.image.ImageFileConfig.ImageType;

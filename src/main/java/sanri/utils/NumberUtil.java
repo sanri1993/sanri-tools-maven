@@ -1,6 +1,6 @@
 package sanri.utils;
 
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import java.text.NumberFormat;
 import java.util.HashMap;
@@ -10,7 +10,7 @@ import java.util.Map;
  * 
  * 创建时间:2017-9-1下午10:11:51<br/>
  * 创建者:sanri<br/>
- * 功能:扩展 org.apache.commons.lang.math.NumberUtils 增加四舍五入,算百分比等功能<br/>
+ * 功能:扩展 org.apache.commons.lang3.math.NumberUtils 增加四舍五入,算百分比等功能<br/>
  */
 public class NumberUtil extends NumberUtils{
 	

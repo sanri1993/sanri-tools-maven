@@ -4,8 +4,8 @@ import com.sanri.app.jdbc.codegenerate.RenamePolicyMybatisExtend;
 import com.sanri.app.postman.JdbcConnDetail;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.postgresql.ds.PGSimpleDataSource;
 import sanri.utils.PropertyEditUtil;
 

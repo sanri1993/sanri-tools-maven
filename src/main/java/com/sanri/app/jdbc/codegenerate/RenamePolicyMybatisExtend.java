@@ -3,7 +3,7 @@ package com.sanri.app.jdbc.codegenerate;
 import com.sanri.app.ConfigCenter;
 import com.sanri.app.jdbc.MysqlExConnection;
 import com.sanri.app.jdbc.PostgreSqlExConnection;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
