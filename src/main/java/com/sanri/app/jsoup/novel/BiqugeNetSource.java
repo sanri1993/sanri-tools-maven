@@ -10,6 +10,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.junit.Test;
 import sanri.utils.HttpUtil;
 
 import java.io.IOException;
@@ -23,12 +24,15 @@ import java.util.regex.Pattern;
  * 功能       :
  */
 public class BiqugeNetSource extends NovelNetSource {
+    static final private String source = "https://www.biqugex.com";
     @Override
     public List<Novel> search(String keyword) throws IOException {
         String sourcePhp = url+"/s.php";
 
         Map<String,String> params = new HashMap<String, String>();
-        params.put("ie","gbk");params.put("s",System.currentTimeMillis()+"");
+        params.put("ie","utf-8");
+//        params.put("s",System.currentTimeMillis()+"");
+        params.put("siteid","biqugex.com");
         params.put("q",keyword);
 
         List<NameValuePair> nameValuePairs = HttpUtil.transferParam(params);
@@ -36,6 +40,7 @@ public class BiqugeNetSource extends NovelNetSource {
         String query = EntityUtils.toString(urlEncodedFormEntity, Consts.UTF_8);
 
         Document document = Jsoup.connect(sourcePhp+"?"+query)
+                .userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36")
                 .timeout(5000).get();
 
         return parserSearchDoucment(document);
@@ -48,81 +53,44 @@ public class BiqugeNetSource extends NovelNetSource {
      */
     private List<Novel> parserSearchDoucment(Document document) {
         List<Novel> novels = new ArrayList<Novel>();
+        Element elementById = document.getElementById("search-main");
+        Elements links = elementById.getElementsByTag("a");
+        for (int i=0;i<links.size();i++){
+            Element $a = links.get(i);
+            String text = $a.text();
+            String href = $a.attr("href");
 
-        Elements bookbox = document.select(".bookbox");
-        Iterator<Element> iterator = bookbox.iterator();
-        while (iterator.hasNext()){
-            Novel novel = new Novel();
+            Element $author = $a.parent().nextElementSibling();
+            Novel novel = new Novel(text, href);
+            novel.setAuthor($author.text());
             novels.add(novel);
-
-            Element bookboxEl = iterator.next();
-
-            //解析  logo 地址
-            Element logoEl = bookboxEl.select(".bookimg>a>img").get(0);
-            String logoSrc = logoEl.attr("src");
-            novel.setLogo(url+logoSrc);
-
-            //得到 bookinfo 属性
-            Element bookInfoEl = bookboxEl.select(".bookinfo").get(0);
-            parserBookInfo(novel, bookInfoEl);
         }
-
         return novels;
     }
 
-    /**
-     * 解析书箱信息
-     * @param novel
-     * @param bookinfoEl
-     */
-
-    static  final Pattern lastChapterPattern = Pattern.compile("第\\w+章");
-    private void parserBookInfo(Novel novel, Element bookinfoEl) {
-        //解析 bookname
-        Element booknameEl = bookinfoEl.select("h4.bookname>a").get(0);
-        String bookname = booknameEl.text();
-        novel.setName(bookname);
-
-        //解析章节地址
-        String href = booknameEl.attr("href");
-        novel.setChapterUrl(url+href);
-        novel.setBookId(href);
-
-        //解析分类
-        Elements categoryEl = bookinfoEl.select(".cat");
-        String category = categoryEl.text();
-        String categoryText = category.replaceFirst("分类：","");
-        novel.setCategory(categoryText);
-
-        //解析作者
-        Elements authorEl = bookinfoEl.select(".author");
-        String author = authorEl.text();
-        String authorText = author.replaceFirst("作者：","");
-        novel.setAuthor(authorText);
-
-        //解析最新章节及标题信息
-        Element lastChapterEl = bookinfoEl.select(".update>a").get(0);
-        String lastChapter = lastChapterEl.text();
-        Matcher matcher = lastChapterPattern.matcher(lastChapter);
-        String chapter = matcher.find() ? matcher.group():"";
-        String chapterTitle = StringUtils.trim(lastChapter.substring(chapter.length()));
-        novel.setLastChapter(chapter);
-        novel.setLastChapterTitle(chapterTitle);
-
-        //解析介绍信息
-        Elements pEl = bookinfoEl.select("p");
-        if(pEl != null && pEl.size() > 0){
-            Element introduceEl = pEl.get(0);
-            String introduce = introduceEl.text();
-            novel.setIntroduce(introduce);
-        }
-
-    }
 
     @Override
     public List<Chapter> chapterCatalog(Novel novel) throws IOException {
         String chapterUrl = novel.getChapterUrl();
         Document document = Jsoup.connect(chapterUrl).timeout(10000).get();
+
+//        //获取书箱信息
+//        Element $info = document.select(".info").get(0);
+//
+//        //logo
+//        Element $cover = $info.select(".cover>img").get(0);
+//        novel.setLogo(url+$cover.attr("src"));
+//
+//        Elements $mostInfo = $info.select(".small>span");
+//        //分类
+//        Element $classify = $mostInfo.get(1);
+//        String classify = StringUtils.split($classify.text(),"：")[1];
+//        novel.setCategory(classify);
+//
+//        //作者
+//        Element $author = $mostInfo.get(0);
+//        String author = StringUtils.split($classify.text(),"：")[1];
+//        novel.setAuthor(author);
 
         Element chapterCatalogEl = document.select(".listmain").get(0);
         return parserChapterCatalog(chapterCatalogEl);
@@ -133,6 +101,7 @@ public class BiqugeNetSource extends NovelNetSource {
         return null;
     }
 
+    static  final Pattern lastChapterPattern = Pattern.compile("第\\w+章");
     /**
      * 解析章节目录
      * @param chapterCatalogEl
@@ -159,7 +128,7 @@ public class BiqugeNetSource extends NovelNetSource {
             Chapter chapter = new Chapter();
             chapter.setSequence(chapterSequence);
             chapter.setTitle(chapterTitle);
-            chapter.setUrl(url+chapterUri);
+            chapter.setUrl(source+chapterUri);
 
             chapters.add(chapter);
         }

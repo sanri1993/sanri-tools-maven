@@ -63,22 +63,20 @@ define(['util','template'],function (util,template) {
         var index = layer.load(1, {
             shade: [0.1,'#fff']
         });
-        try {
-            util.requestData('/novel/searchBook', {netSource: novel.netsource, keyword: input}, function (novels) {
-                var $result = $('#result').empty();
-                $('#resultCount').text(novels.length);
-                for (var i = 0; i < novels.length; i++) {
-                    var currentNovel = novels[i];
-                    var novelHtml = template('novelTemplate', currentNovel);
+        util.requestData('/novel/searchBook', {netSource: novel.netsource, keyword: input}, function (novels) {
+            var $result = $('#result').empty();
+            $('#resultCount').text(novels.length);
+            for (var i = 0; i < novels.length; i++) {
+                var currentNovel = novels[i];
+                var novelHtml = template('novelTemplate', currentNovel);
 
-                    $result.append(novelHtml);
-                }
+                $result.append(novelHtml);
+            }
 
-                layer.close(index);
-            });
-        }catch (e){
             layer.close(index);
-        }
+        },function () {
+            layer.close(index);
+        });
     }
 
     return novel.init();
