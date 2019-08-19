@@ -19,7 +19,7 @@ sanri-tools-maven 是一个开源的用于企业开发的工具包，重点想�
 
 已经存在的工具可以在 /src/main/resources/com/sanri/config/tools.properties 中查看
 
-1. 方法或变量取名
+1. [方法或变量取名](helps/取名工具.md)
 2. 数据提取
 3. 生份证号码生成与验证
 4. kafka  监控和 offset 设置,支持新旧版本 kafka
@@ -116,9 +116,3 @@ https://github.com/sanri1993/sanri-tools-maven/releases
 
 
 ![](http://m.qpic.cn/psb?/V14Rorzr338mDG/btFWmDMeCvYOpR.JtSc3xokPTxM52TJbTyt3lXH9c*U!/b/dIMAAAAAAAAA&bo=xQRNAgAAAAADJ4w!&rf=viewer_4)
-
-![](http://m.qpic.cn/psb?/V14Rorzr338mDG/C4yyvFkPVjo0BOQA0ol6wiwuUZmyHf9aLklVk1zpa*8!/b/dL4AAAAAAAAA&bo=MQVIAgAAAAADB1w!&rf=viewer_4)
-
-
-
-![](http://m.qpic.cn/psb?/V14Rorzr338mDG/fTZY2ZdA5x4MDCe*x03.c1vfqpcLYS4Sc1NiGKPRq5o!/b/dLYAAAAAAAAA&bo=HgU6AgAAAAADFxE!&rf=viewer_4)
