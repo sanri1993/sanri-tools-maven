@@ -676,6 +676,7 @@ public class DispatchServlet extends HttpServlet {
 	 */
 	private void handleException(HttpServletRequest request, HttpServletResponse response, Writer writer, Throwable targetException)
 			throws IOException {
+		response.setContentType("text/html;charset=UTF-8");
 		if(handlerExceptionResolver != null){
 			ModelAndView resolveException = handlerExceptionResolver.resolveException(request, response, targetException);
 			if(resolveException != null){

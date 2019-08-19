@@ -18,7 +18,7 @@
 //import java.util.HashMap;
 //import java.util.Map;
 //
-//@RequestMapping("/captureDish")
+//@RequestMapping("/test")
 //public class TestServlet {
 //
 //	/**
