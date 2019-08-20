@@ -22,12 +22,12 @@ sanri-tools-maven 是一个开源的用于企业开发的工具包，重点想�
 1. [方法或变量取名](helps/取名工具.md)
 2. [数据提取](helps/数据提取.md)
 3. 生份证号码生成与验证
-4. kafka  监控和 offset 设置,支持新旧版本 kafka
-5. zookeeper 数据监控
+4. [kafka  监控和 offset 设置,支持新旧版本 kafka](helps/kafka消费监控.md)
+5. [zookeeper 数据监控](helps/zookeeper数据监控.md)
 6. [模板代码生成,根据列字段 ](helps/模板代码生成.md)
 7. [列字段比较 ](helps/字段比较.md)
 8. [数据库表字段,注释,名称查询,及后续模板代码操作](helps/数据表处理工具.md)
-9. webservice 调试工具,只要输入 wsdl 地址,自动解析并构建 xml 消息 
+9. [webservice 调试工具,只要输入 wsdl 地址,自动解析并构建 xml 消息](helps/webservice调用.md) 
 10. [下划线转驼峰,驼峰转下划线工具](helps/数据提取.md)
 11. 图片转 base64 ,base64 转图片
 12. SQL 客户端,已经支持 mysql,postgresql,oracle ; 可自定义实现其它数据库 
@@ -47,6 +47,10 @@ sanri-tools-maven 是一个开源的用于企业开发的工具包，重点想�
     * 保存历史消息，针对当前 session 标签页而言
     * 目前只能群聊
     * 只支持单独 tomcat7 以上部署，用 maven  tomcat 插件是不行的
+
+15. 增加 redis 数据监控功能
+   * 可以搜索 key 信息
+   * 反序列化查看 key 数据,目前只支持 string 类型数据 
 
 ## 扩展自己的工具
 
