@@ -3,7 +3,7 @@ define(['util','dialog','icheck'],function(util,dialog){
 
     var apis = {
         groupSubscribeTopics:'/kafka/groupSubscribeTopics',
-        autoSelectMonitor:'/kafka/autoSelectMonitor',
+        autoSelectMonitor:'/kafka/groupSubscribeTopicsMonitor',
         groupTopicMonitor:'/kafka/groupTopicMonitor',
         editOffset:'/kafka/editOffset',
         nearbyDatas:'/kafka/nearbyDatas',
@@ -27,12 +27,14 @@ define(['util','dialog','icheck'],function(util,dialog){
         var index = layer.load(1, {
           shade: [0.1,'#fff']
         });
-        util.requestData(apis.autoSelectMonitor,{group:subscribeTopics.group,name:subscribeTopics.conn},function(data) {
+        util.requestData(apis.autoSelectMonitor,{group:subscribeTopics.group,clusterName:subscribeTopics.conn},function(data) {
             var $tbody = $('#topictable>tbody').empty();
             for (var i = 0; i < data.length; i++) {
                 var topicItem = data[i];
                 var $tr = $('<tr><td>' + (i + 1) + '</td><td>' + topicItem.topic + '</td><td>' + topicItem.partitions + '</td><td>' + topicItem.offset + '</td><td>' + topicItem.logSize + '</td><td>' + topicItem.lag + '</td><td><a href="javascript:void(0);"topic="' + topicItem.topic + '">监控</a></td></tr>').appendTo($tbody);
             }
+            layer.close(index);
+        },function () {
             layer.close(index);
         });
     }
@@ -44,10 +46,33 @@ define(['util','dialog','icheck'],function(util,dialog){
             {parent:'#monitorOffset',selector:'button[name=offsetMin]',types:['click'],handler:setOffsetMin},
             {parent:'#monitorOffset',selector:'button[name=showdata]',types:['click'],handler:loadSerializes},
             {parent:'#monitorOffset',selector:'button[name=lastdata]',types:['click'],handler:loadSerializes},
-            {selector:'#serializeTools',types:['change'],handler:showdata}
+            {selector:'#serializeTools',types:['change'],handler:showdata},
+            {parent:'#datadetail',selector:'button',types:['click'],handler:jsonView}
         ];
         util.regPageEvents(events);
 
+        function jsonView() {
+            var offset = $(this).closest('tr').attr('offset');
+            var json = $(this).parent().siblings('td:last').text();
+            // $('#jsonViewLoad').text(json);
+
+            dialog.create('offset:'+offset +' 的数据')
+                .setWidthHeight('500px','500px')
+                .setContent($('#jsonView'))
+                .onOpen(loadJsonData)
+                .build();
+
+            function loadJsonData() {
+                require(['jsonview'],function () {
+                    $('#jsonViewLoad').JSONView(json);
+                });
+
+            }
+        }
+
+        /**
+         * 附近数据展示
+         */
         function showdata() {
             //获取暂存数据
             var $form = $('#serializeTools').closest('form');
@@ -68,11 +93,12 @@ define(['util','dialog','icheck'],function(util,dialog){
                 switchApi = apis.lastDatas;
             }
 
-            util.requestData(switchApi,{name:conn,topic:topic,partition:partition,offset:offset,serialize:serialize},function (datas) {
+            util.requestData(switchApi,{clusterName:conn,topic:topic,partition:partition,offset:offset,serialize:serialize},function (datas) {
                // $('#datadetail').html(data.join('<br/>'));
                 var $tbody = $('#datadetail').find('tbody').empty();
                 for(var offset in datas){
-                    $tbody.append('<tr><td>'+offset+'</td><td>'+datas[offset]+'</td></tr>');
+                    var btn = '<button type="button" class="btn btn-sm btn-primary"><i class="fa fa-book"></i> JSON </button>';
+                    $tbody.append('<tr offset="'+offset+'"><td>'+btn+'</td><td>'+offset+'</td><td>'+datas[offset]+'</td></tr>');
                 }
             });
         }
@@ -94,7 +120,7 @@ define(['util','dialog','icheck'],function(util,dialog){
 
             //加载序列化工具列表
             util.requestData(apis.serializes,function (serializes) {
-                $('#serializeTools').empty().append('<option value="">未选择</option>');
+                $('#serializeTools').empty();
                 for(var i=0;i<serializes.length;i++){
                     $('#serializeTools').append('<option value="'+serializes[i]+'">'+serializes[i]+'</option>');
                 }
@@ -154,7 +180,7 @@ define(['util','dialog','icheck'],function(util,dialog){
             var index = layer.load(1, {
               shade: [0.1,'#fff']
             });
-            util.requestData(apis.groupTopicMonitor,{group:subscribeTopics.group,topic:topic,name:subscribeTopics.conn},function(data){
+            util.requestData(apis.groupTopicMonitor,{group:subscribeTopics.group,topic:topic,clusterName:subscribeTopics.conn},function(data){
                 for(var i=0;i<data.length;i++){
                     var offsetShow = data[i];
                     var lastUpdateTime = util.FormatUtil.dateFormat(offsetShow.modified,'yyyy-MM-dd HH:mm:ss');
@@ -165,6 +191,8 @@ define(['util','dialog','icheck'],function(util,dialog){
                     $tr.data('topicInfo',offsetShow);
                 }
 
+                layer.close(index);
+            },function () {
                 layer.close(index);
             });
         }

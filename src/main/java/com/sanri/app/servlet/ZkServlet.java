@@ -39,8 +39,10 @@ public class ZkServlet extends BaseServlet {
     private static HexSerializer hexSerializer = new HexSerializer();
 
     static Map<String,ZkSerializer> zkSerializerMap = new LinkedHashMap<>();
+    public static final String modul = "zookeeper";
+
     static {
-        zookeeperConfigDir = mkConfigPath("zookeeper");
+        zookeeperConfigDir = mkConfigPath(modul);
         zkSerializerMap.put("string",stringSerializer);
         zkSerializerMap.put("fastJson",fastJsonSerializer);
         zkSerializerMap.put("jdk",jdkSerializer);

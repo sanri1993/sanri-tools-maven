@@ -18,12 +18,17 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
+import org.springframework.util.ReflectionUtils;
 import sanri.utils.NumberUtil;
 import sanri.utils.PathUtil;
 
@@ -38,6 +43,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -162,30 +168,18 @@ public class DispatchServlet extends HttpServlet {
 		};
 		findClass(pkgDir,filenameFilter,classList);
 		//日志记录找到的类
-		StringBuffer findClassList = new StringBuffer();
 		if(classList != null && classList.size() > 0){
-			for (Class<?> class1 : classList) {
-				findClassList.append(class1.getSimpleName()).append(" ");
-				//存储类实例
-				try{
-					Object newInstance = class1.newInstance();
-					CLASS_INSTANCE.put(class1.getSimpleName(), newInstance);
-
-//					Method[] methods = class1.getMethods();
-//					if(ArrayUtils.isNotEmpty(methods)){
-//						for (Method method : methods) {
-//							PostConstruct postConstruct = method.getAnnotation(PostConstruct.class);
-//							if(postConstruct != null){
-//								MethodUtils.invokeMethod(newInstance,method.getName(),new Object[]{});
-//							}
-//						}
-//					}
-				}catch(Exception e){
-					e.printStackTrace();
+			for (Class<?> clazz : classList) {
+				String simpleName = clazz.getSimpleName();
+				if(CLASS_INSTANCE.containsKey(simpleName)){
+					//这里采用依赖实例化，有可能有的 servlet 先实例化过了，不用再次实例化
+					continue;
 				}
+				Object newInstance = instanceServlet(clazz);
+				CLASS_INSTANCE.put(simpleName, newInstance);
 			}
 		}
-		logger.info("查找到并实例化类("+classList.size()+"):"+findClassList.toString());
+		logger.info("查找到并实例化类("+classList.size()+"):"+StringUtils.join(CLASS_INSTANCE.keySet(),','));
 		//查找所有映射 
 		try {
 			mapping(classList);
@@ -197,7 +191,33 @@ public class DispatchServlet extends HttpServlet {
 			e.printStackTrace();
 		}
 	}
-	
+
+	private Object instanceServlet(Class<?> clazz) {
+		//增加构造注入,目前只能自动注入 servlet
+		Constructor<?>[] constructors = clazz.getConstructors();
+		Constructor<?> constructor = constructors[0];
+		Class<?>[] parameterTypes = constructor.getParameterTypes();
+		Object [] paramValues = new Object[parameterTypes.length];
+
+		for (int i=0;i<parameterTypes.length;i++) {
+			Class<?> parameterType = parameterTypes[i];
+			String simpleName = parameterType.getSimpleName();
+			Object targetServlet = CLASS_INSTANCE.get(simpleName);
+			if(targetServlet == null){
+				targetServlet = instanceServlet(parameterType);
+				CLASS_INSTANCE.put(simpleName,targetServlet);
+			}
+			paramValues[i] = targetServlet;
+		}
+
+		try {
+			return ConstructorUtils.invokeConstructor(clazz, paramValues, parameterTypes);
+		}catch (Exception e){
+			logger.error("类["+clazz.getSimpleName()+"]实例化失败:"+e.getMessage(),e);
+		}
+		return null;
+	}
+
 	/**
 	 * 
 	 * 作者:sanri <br/>

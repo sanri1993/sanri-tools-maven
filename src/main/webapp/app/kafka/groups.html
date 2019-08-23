@@ -21,9 +21,6 @@
         .admin-class:hover{
             text-decoration: underline;
         }
-        .text-red{
-            color: red;
-        }
     </style>
 
 </head>
@@ -58,7 +55,6 @@
                 <div class="button-group ">
                     <button id="newconnbtn" class="btn btn-primary btn-sm"><i class="fa fa-plus"></i> 新连接</button>
                     <button id="thirdpart" class="btn btn-success btn-sm"><i class="fa fa-cogs"></i> 设置监控地址</button>
-                    <button id="stopConsumer" class="btn btn-link btn-sm"><i class="fa fa-stop text-red" ></i> 停止监控</button>
                 </div>
             </div>
         </div>
@@ -93,24 +89,52 @@
         <div class="form-group">
             <label class="control-label col-sm-3 ">连接名:</label>
             <div class="col-sm-9 ">
-                <select name="conns" id="conns"  class="form-control" ></select>
+                <select name="zkConn" id="conns"  class="form-control" ></select>
             </div>
         </div>
 
         <div class="form-group">
             <label class="control-label col-sm-3 ">根路径:</label>
             <div class="col-sm-9 ">
-                <input type="text" name="rootPath" autocomplete="false" spellcheck="false"  class="form-control" placeholder="根路径(默认空)" />
+                <input type="text" name="chroot" autocomplete="false" spellcheck="false"  class="form-control" placeholder="根路径(默认空)" />
             </div>
         </div>
 
         <div class="form-group">
             <label class="control-label col-sm-3 ">版本:</label>
             <div class="col-sm-9 ">
-                <select name="version" class="form-control" id="version">
+                <select name="clusterVersion" class="form-control" id="version">
                     <option value="new">新0.8.1.1</option>
                     <option value="old">旧0.8.1.1(包含)</option>
                 </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="" class="control-label col-sm-3">sasl.mechanism</label>
+            <div class="col-sm-9">
+                <input type="text" name="saslMechanism" autocomplete="false" spellcheck="false"  class="form-control" placeholder="saslMechanism" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="" class="control-label col-sm-3">loginModel</label>
+            <div class="col-sm-9">
+                <input type="text" name="loginModel" autocomplete="false" spellcheck="false"  class="form-control" placeholder="loginModel" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="" class="control-label col-sm-3">username</label>
+            <div class="col-sm-9">
+                <input type="text" name="username" autocomplete="false" spellcheck="false"  class="form-control" placeholder="username" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="" class="control-label col-sm-3">password</label>
+            <div class="col-sm-9">
+                <input type="text" name="password" autocomplete="false" spellcheck="false"  class="form-control" placeholder="password" />
             </div>
         </div>
     </form>

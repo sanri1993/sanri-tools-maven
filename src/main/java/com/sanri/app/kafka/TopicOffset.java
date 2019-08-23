@@ -30,6 +30,9 @@ public class TopicOffset {
 
     public void addPartitionOffset(OffsetShow offsetShow) {
         partitionOffsets.add(offsetShow);
+        logSize += offsetShow.getLogSize();
+        lag += offsetShow.getLag();
+        offset += offsetShow.getOffset();
     }
 
     public String getTopic() {

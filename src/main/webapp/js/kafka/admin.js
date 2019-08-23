@@ -23,7 +23,7 @@ define(['util','dialog','icheck','jsonview'],function (util,dialog) {
         var index = layer.load(1, {
           shade: [0.1,'#fff']
         });
-        util.requestData(apis.topics,{name:kafkaAdmin.conn},function (topics) {
+        util.requestData(apis.topics,{clusterName:kafkaAdmin.conn},function (topics) {
             layer.close(index);
 
             var $topics = $('#topics').empty();
@@ -95,7 +95,7 @@ define(['util','dialog','icheck','jsonview'],function (util,dialog) {
             var index = layer.load(1, {
                 shade: [0.1,'#fff']
             });
-            util.requestData(apis.logSizes, {name:kafkaAdmin.conn,topic: topicName}, function (logSizes) {
+            util.requestData(apis.logSizes, {clusterName:kafkaAdmin.conn,topic: topicName}, function (logSizes) {
                 var $tbody = $('#topicdetail>tbody').empty();
                 var htmlCode = [];
                 var partitions = Object.keys(logSizes);
