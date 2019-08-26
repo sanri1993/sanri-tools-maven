@@ -13,7 +13,7 @@ public class RabbitmqUtil {
 
     public static final String HOST = "localhost";
     public static final int PORT = 5672;
-    public static final String VHOST = "/test";
+    public static final String VHOST = "/apps";
     public static final String USERNAME = "sanri";
     public static final String PASSWORD = "h123";
 

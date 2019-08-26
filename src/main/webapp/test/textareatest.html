@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <textarea id="textarea" ></textarea>
+    <button id="btn">提交</button>
+</body>
+<script type="text/javascript" src="jquery-1.8.3.min.js"></script>
+<script>
+    $('#btn').click(function () {
+        $.ajax({
+            type:'post',
+            url:'/sanritools/test/testTextarea',
+            contentType:'application/json',
+            data:JSON.stringify({textarea:textarea.value}),
+            dataType:'json',
+            success:function(path){
+
+            }
+        });
+    });
+
+</script>
+</html>

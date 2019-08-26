@@ -41,6 +41,7 @@ public class KafkaServlet extends BaseServlet{
 
     private static final Map<String, AdminClient> adminClientMap = new HashMap<>();
 
+    //构造注入,目前仅支持注入 servlet
     public KafkaServlet(ZkServlet zkServlet,FileManagerServlet fileManagerServlet){
         this.zkServlet = zkServlet;
         this.fileManagerServlet = fileManagerServlet;
