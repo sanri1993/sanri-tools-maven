@@ -1,4 +1,4 @@
-package learntest.rabbitmq.topic;
+package learntest.rabbitmq.route;
 
 import com.rabbitmq.client.*;
 import learntest.rabbitmq.RabbitmqUtil;
@@ -6,7 +6,7 @@ import learntest.rabbitmq.RabbitmqUtil;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
-public class Recv2 {
+public class TopicRecv2 {
     private static final String EXCHANGE_NAME = "test_exchange_topic";
     private static final String QUEUE_NAME = "test_queue_topic_2";
 

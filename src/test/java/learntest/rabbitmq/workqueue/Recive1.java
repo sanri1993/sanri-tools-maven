@@ -17,7 +17,6 @@ public class Recive1 {
         //保证一次只发一个
         channel.basicQos(1);
 
-
         DefaultConsumer defaultConsumer = new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {

@@ -1,4 +1,4 @@
-package learntest.rabbitmq.topic;
+package learntest.rabbitmq.route;
 
 import com.rabbitmq.client.*;
 import learntest.rabbitmq.RabbitmqUtil;
@@ -6,16 +6,17 @@ import learntest.rabbitmq.RabbitmqUtil;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
-public class Recv1 {
-    private static final String EXCHANGE_NAME = "test_exchange_topic";
-    private static final String QUEUE_NAME = "test_queue_topic_1";
+public class DirectRecv2 {
+    private static final String EXCHANGE_NAME = "test_direct_exchange";
+    private static final String QUEUE_NAME = "test_queue_direct_2";
 
     public static void main(String[] args) throws IOException, TimeoutException {
         Connection connection = RabbitmqUtil.connection();
         Channel channel = connection.createChannel();
 
         channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-        channel.queueBind(QUEUE_NAME, EXCHANGE_NAME, "goods.add");
+        channel.queueBind(QUEUE_NAME, EXCHANGE_NAME, "info");
+        channel.queueBind(QUEUE_NAME, EXCHANGE_NAME, "error");
 
         channel.basicQos(1);
         Consumer consumer = new DefaultConsumer(channel) {
@@ -38,5 +39,4 @@ public class Recv1 {
         boolean autoAck = false;
         channel.basicConsume(QUEUE_NAME, autoAck, consumer);
     }
-
 }
