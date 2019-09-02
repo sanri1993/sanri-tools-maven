@@ -119,8 +119,14 @@ public class FileManagerServlet extends BaseServlet {
 
         File targetFile = path;
         if(path.isDirectory()){
-            targetFile = new File(path.getParent(),path.getName()+".zip");
-            ZipUtil.zip(path, targetFile);
+            File[] files = path.listFiles();
+            if(files.length == 1){
+                //只有一个文件时不用打包，直接下载文件
+                targetFile = files[0];
+            }else {
+                targetFile = new File(path.getParent(), path.getName() + ".zip");
+                ZipUtil.zip(path, targetFile);
+            }
         }
         FileInputStream fileInputStream = null;
         try {
