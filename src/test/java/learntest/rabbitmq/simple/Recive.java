@@ -11,6 +11,8 @@ public class Recive {
         Connection connection = RabbitmqUtil.connection();
         Channel channel = connection.createChannel();
 
+        //durable 是否持久化；用于保证消息的可靠
+        //队列创建后不可以更改队列配置
         channel.queueDeclare("test",false,false,false,null);
 
         DefaultConsumer defaultConsumer = new DefaultConsumer(channel) {

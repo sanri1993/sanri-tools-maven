@@ -15,9 +15,9 @@ public class Recive2 {
 
         channel.queueDeclare(QUEUE_NAME,false,false,false,null);
 
-        //保证一次只发一个
+        //每个消费者发送确认消息之前，消息队列不发送下一个消息到消费者，一次只处理一个 ,公平分发
+        //限制发送给一个消费者不超过一条
         channel.basicQos(1);
-
 
         DefaultConsumer defaultConsumer = new DefaultConsumer(channel) {
             @Override

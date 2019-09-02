@@ -1,17 +1,19 @@
 package sanri.utils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.SocketException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
+import org.junit.Test;
 
 /**
  * 
@@ -20,104 +22,62 @@ import org.apache.commons.net.ftp.FTPFile;
  * 功能: ftp 工具类 <br/>
  */
 public class FtpClientUtil {
-	// ftp 客户端列表 主机_用户 =>客户端
-	public static final Map<String, FTPClient> ftpClients = new HashMap<String, FTPClient>();
 
-	public void init() {
+	@Test
+	public void testlistFiles() throws IOException {
+		FTPClient ftpClient = new FTPClient();
+		ftpClient.connect("localhost");
+		boolean login = ftpClient.login("sanri", "123");
+		FTPFile[] ftpFiles = ftpClient.listFiles("/a/n/c/");
+		for (FTPFile ftpFile : ftpFiles) {
+			System.out.println(ftpFile);
+		}
 
+		ftpClient.disconnect();
 	}
 
-	// 销毁后结束所有客户端
-	public void closeClients() {
-		Iterator<FTPClient> iterator = ftpClients.values().iterator();
-		while (iterator.hasNext()) {
-			FTPClient next = iterator.next();
-			try {
-				next.disconnect();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	/**
-	 * 
-	 * 作者:sanri <br/>
-	 * 时间:2017-8-14下午3:05:32<br/>
-	 * 功能:查询 fptclient <br/>
-	 * 
-	 * @param host
-	 * @param username
-	 * @return
-	 */
-	public static FTPClient findFtpClient(String host, String username, String password) {
-		FTPClient ftpClient = ftpClients.get(host + "_" + username);
-		if (ftpClient == null) {
-			ftpClient = new FTPClient();
-			ftpClients.put(host + "_" + username, ftpClient);
-		}
-		try {
-			ftpClient.connect(host);
-			ftpClient.login(username, password);
-		} catch (SocketException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return ftpClient;
+	@Test
+	public void testGetFile() throws IOException {
+		FTPClient ftpClient = new FTPClient();
+		ftpClient.connect("localhost");
+		boolean login = ftpClient.login("sanri", "123");
+		InputStream inputStream = ftpClient.retrieveFileStream("/a/n/c/mm.mp4");
+		FileOutputStream fileOutputStream = new FileOutputStream("d:/test/a.mp4");
+		IOUtils.copy(inputStream,fileOutputStream);
+		fileOutputStream.close();
+		ftpClient.disconnect();
 	}
 
 	/**
-	 * 
-	 * 作者:sanri <br/>
-	 * 时间:2017-8-14下午3:15:17<br/>
-	 * 功能:将 ftp 文件流输出到本地<br/>
-	 * 
-	 * @param ftpClient
-	 * @param path
-	 *            文件完整路径
-	 * @param out
-	 * @throws FileNotFoundException 
+	 * 测试文件上传
+	 * @throws IOException
 	 */
-	public static void transferTo(FTPClient ftpClient, String path, OutputStream out) throws FileNotFoundException {
-		File file = new File(path);
-		String filename = file.getName();
-		String filePath = file.getParent();
-		try {
-			// String filePath="//20170816";
-			ftpClient.changeWorkingDirectory(filePath);
-			FTPFile[] listFiles = ftpClient.listFiles();
-			boolean find = false;
-			if (listFiles != null && listFiles.length > 0) {
-				for (FTPFile ftpFile : listFiles) {
-					if (ftpFile.getName().equals(filename)) {
-						find = true;
-						try {
-							ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-							ftpClient.retrieveFile(ftpFile.getName(), out);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						return;
-					}
+	@Test
+	public void testStoreFile() throws IOException {
+		FTPClient ftpClient = new FTPClient();
+		ftpClient.connect("localhost");
+		boolean login = ftpClient.login("sanri", "123");
+		if (login){
+			File file = new File("C:\\Users\\091795960\\Desktop/168aa273ab7d1a331c0350f460095b26.mp4");
+
+			//循环创建路径，并添加文件
+			File target = new File("a/n/c/mm.mp4");
+			Path path = target.getParentFile().toPath();
+			Iterator<Path> iterator = path.iterator();
+			StringBuffer root = new StringBuffer("");
+			while (iterator.hasNext()){
+				Path next = iterator.next();
+				root.append("/").append(next);
+
+				//尝试切入目录
+				boolean success = ftpClient.changeWorkingDirectory(root.toString());
+				if(!success){
+					ftpClient.makeDirectory(next.toString());
+					ftpClient.changeWorkingDirectory(root.toString());
 				}
 			}
-			if (!find) {
-				throw new FileNotFoundException("文件未找到:" + path);
-			}
-		}catch(FileNotFoundException e){
-			throw e;
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				ftpClient.logout();
-				ftpClient.disconnect();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			System.out.println(ftpClient.printWorkingDirectory());
+			ftpClient.storeFile(target.getName(),FileUtils.openInputStream(file));
 		}
 	}
-
-
 }
