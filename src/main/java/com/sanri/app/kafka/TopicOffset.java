@@ -9,18 +9,11 @@ import java.util.List;
 public class TopicOffset {
     private String group;
     private String topic;
-    private int partitions;
 
     private long logSize;
     private long lag;
     private long offset;
     private List<OffsetShow> partitionOffsets = new ArrayList<OffsetShow>();
-
-    public TopicOffset(String group, String topic, int partitions) {
-        this.group = group;
-        this.topic = topic;
-        this.partitions = partitions;
-    }
 
     public TopicOffset(String group, String topic) {
         super();
@@ -48,7 +41,7 @@ public class TopicOffset {
     }
 
     public int getPartitions() {
-        return partitions;
+        return partitionOffsets.size();
     }
 
     public List<OffsetShow> getPartitionOffsets() {
@@ -76,11 +69,6 @@ public class TopicOffset {
     }
 
 
-    public void setPartitions(int partitions) {
-        this.partitions = partitions;
-    }
-
-
     public void setPartitionOffsets(List<OffsetShow> partitionOffsets) {
         this.partitionOffsets = partitionOffsets;
     }
@@ -93,17 +81,6 @@ public class TopicOffset {
 
     public void setOffset(long offset) {
         this.offset = offset;
-    }
-
-    public OffsetShow getPartitionOffsetShow(int partition) {
-        for (OffsetShow offsetShow : partitionOffsets) {
-            int currentPartition = offsetShow.getPartition();
-            if (currentPartition == partitions) {
-                return offsetShow;
-            }
-        }
-
-        return null;
     }
 
     /**

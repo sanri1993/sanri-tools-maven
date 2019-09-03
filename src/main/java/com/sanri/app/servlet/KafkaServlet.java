@@ -15,11 +15,11 @@ import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.TopicPartitionInfo;
 import org.apache.kafka.common.config.SaslConfigs;
-import org.apache.kafka.common.requests.DescribeLogDirsResponse;
 import sanri.utils.NumberUtil;
 
 import java.io.IOException;
@@ -171,41 +171,48 @@ public class KafkaServlet extends BaseServlet{
      * @throws IOException
      */
     public List<TopicOffset> groupSubscribeTopicsMonitor(String clusterName, String group) throws IOException, ExecutionException, InterruptedException {
-        Map<String,TopicOffset> topicOffsets = new HashMap<>();
+        AdminClient adminClient = loadAdminClient(clusterName);
 
-        //获取当前分组订阅的主题列表
-        Set<String> topics = groupSubscribeTopics(clusterName, group);
+        //创建 KafkaConsumer 来获取 offset ,lag,logsize
+        Properties properties = kafkaProperties(clusterName);
+        KafkaConsumer<byte[], byte[]> consumer = new KafkaConsumer<byte[], byte[]>(properties);
 
-        Collection<DescribeLogDirsResponse.LogDirInfo> logDirInfos = logDirsInfos(clusterName);
-        Iterator<DescribeLogDirsResponse.LogDirInfo> logDirInfoIterator = logDirInfos.iterator();
-        while (logDirInfoIterator.hasNext()){
-            DescribeLogDirsResponse.LogDirInfo logDirInfo = logDirInfoIterator.next();
-            Map<TopicPartition, DescribeLogDirsResponse.ReplicaInfo> replicaInfos = logDirInfo.replicaInfos;
-            Iterator<Map.Entry<TopicPartition, DescribeLogDirsResponse.ReplicaInfo>> entryIterator = replicaInfos.entrySet().iterator();
-            while (entryIterator.hasNext()){
-                Map.Entry<TopicPartition, DescribeLogDirsResponse.ReplicaInfo> topicPartitionReplicaInfoEntry = entryIterator.next();
-                TopicPartition topicPartition = topicPartitionReplicaInfoEntry.getKey();
-                String currentTopic = topicPartition.topic();
-                if(!topics.contains(currentTopic)){
-                    continue;
-                }
-                TopicOffset topicOffset = topicOffsets.get(currentTopic);
-                if(topicOffset == null){
-                    topicOffset = new TopicOffset(group,currentTopic);
-                    topicOffsets.put(currentTopic,topicOffset);
-                }
-
-                int partition = topicPartition.partition();
-                DescribeLogDirsResponse.ReplicaInfo replicaInfo = topicPartitionReplicaInfoEntry.getValue();
-                long logSize = replicaInfo.size;
-                long offsetLag = replicaInfo.offsetLag;
-                long offset = logSize - offsetLag;
-
-                OffsetShow offsetShow = new OffsetShow(currentTopic, partition, offset, logSize);
-                topicOffset.addPartitionOffset(offsetShow);
-            }
+        List<TopicPartition> topicPartitionsQuery = new ArrayList<>();
+        DescribeConsumerGroupsResult describeConsumerGroupsResult = adminClient.describeConsumerGroups(Collections.singletonList(group));
+        Map<String, KafkaFuture<ConsumerGroupDescription>> stringKafkaFutureMap = describeConsumerGroupsResult.describedGroups();
+        ConsumerGroupDescription consumerGroupDescription = stringKafkaFutureMap.get(group).get();
+        Collection<MemberDescription> members = consumerGroupDescription.members();
+        List<TopicPartition> allTopicPartition = new ArrayList<>();
+        for (MemberDescription member : members) {
+            MemberAssignment assignment = member.assignment();
+            Set<TopicPartition> topicPartitions = assignment.topicPartitions();
+            allTopicPartition.addAll(topicPartitions);
         }
 
+        //查询  offset 信息
+        Map<TopicPartition, OffsetAndMetadata> offsetAndMetadataMap = adminClient.listConsumerGroupOffsets(group).partitionsToOffsetAndMetadata().get();
+
+        Map<TopicPartition, Long> topicPartitionLongMap = consumer.endOffsets(allTopicPartition);
+        Iterator<Map.Entry<TopicPartition, Long>> iterator = topicPartitionLongMap.entrySet().iterator();
+        Map<String,TopicOffset> topicOffsets = new HashMap<>();
+        while (iterator.hasNext()){
+            Map.Entry<TopicPartition, Long> entry = iterator.next();
+            TopicPartition topicPartition = entry.getKey();
+            String topic = topicPartition.topic();
+            int partition = topicPartition.partition();
+            Long logSize = entry.getValue();
+            long offset = offsetAndMetadataMap.get(topicPartition).offset();
+            long lag = logSize - offset;
+//            long offset = consumer.position(topicPartition);
+//            long lag = logSize - offset;
+
+            TopicOffset topicOffset = topicOffsets.get(topic);
+            if(topicOffset == null){
+                topicOffset = new TopicOffset(group,topic);
+                topicOffsets.put(topic,topicOffset);
+            }
+            topicOffset.addPartitionOffset(new OffsetShow(topic,partition,offset,logSize));
+        }
         return new ArrayList<>(topicOffsets.values());
     }
 
@@ -221,49 +228,64 @@ public class KafkaServlet extends BaseServlet{
      */
     public List<OffsetShow> groupTopicMonitor(String clusterName, String group, String topic) throws IOException, ExecutionException, InterruptedException {
         List<OffsetShow> offsetShows = new ArrayList<>();
+        AdminClient adminClient = loadAdminClient(clusterName);
+        Properties properties = kafkaProperties(clusterName);
+        KafkaConsumer<byte[], byte[]> consumer = new KafkaConsumer<>(properties);
 
-        Collection<DescribeLogDirsResponse.LogDirInfo> logDirInfos = logDirsInfos(clusterName);
-        Iterator<DescribeLogDirsResponse.LogDirInfo> logDirInfoIterator = logDirInfos.iterator();
-        while (logDirInfoIterator.hasNext()){
-            DescribeLogDirsResponse.LogDirInfo logDirInfo = logDirInfoIterator.next();
-            Map<TopicPartition, DescribeLogDirsResponse.ReplicaInfo> replicaInfos = logDirInfo.replicaInfos;
-            Iterator<Map.Entry<TopicPartition, DescribeLogDirsResponse.ReplicaInfo>> entryIterator = replicaInfos.entrySet().iterator();
-
-            while (entryIterator.hasNext()){
-                Map.Entry<TopicPartition, DescribeLogDirsResponse.ReplicaInfo> topicPartitionReplicaInfoEntry = entryIterator.next();
-                TopicPartition topicPartition = topicPartitionReplicaInfoEntry.getKey();
-                String currentTopic = topicPartition.topic();
-                if(!currentTopic.equals(topic)) {                        //这里只选择当前主题的
-                    continue;
-                }
-
-                int partition = topicPartition.partition();
-                DescribeLogDirsResponse.ReplicaInfo replicaInfo = topicPartitionReplicaInfoEntry.getValue();
-                long logSize = replicaInfo.size;
-                long offsetLag = replicaInfo.offsetLag;
-                long offset = logSize - offsetLag;
-
-                OffsetShow offsetShow = new OffsetShow(topic, partition, offset, logSize);
-                offsetShows.add(offsetShow);
-            }
+        DescribeTopicsResult describeTopicsResult = adminClient.describeTopics(Collections.singletonList(topic));
+        TopicDescription topicDescription = describeTopicsResult.values().get(topic).get();
+        List<TopicPartitionInfo> partitions = topicDescription.partitions();
+        List<TopicPartition> topicPartitions = new ArrayList<>();
+        for (TopicPartitionInfo partition : partitions) {
+            TopicPartition topicPartition = new TopicPartition(topic, partition.partition());
+            topicPartitions.add(topicPartition);
         }
 
+        //查询  offset 信息
+        ListConsumerGroupOffsetsOptions listConsumerGroupOffsetsOptions = new ListConsumerGroupOffsetsOptions();
+        listConsumerGroupOffsetsOptions.topicPartitions(topicPartitions);
+
+        Map<TopicPartition, OffsetAndMetadata> offsetAndMetadataMap = adminClient.listConsumerGroupOffsets(group,listConsumerGroupOffsetsOptions).partitionsToOffsetAndMetadata().get();
+
+        Map<TopicPartition, Long> topicPartitionLongMap = consumer.endOffsets(topicPartitions);
+        Iterator<Map.Entry<TopicPartition, Long>> iterator = topicPartitionLongMap.entrySet().iterator();
+        while (iterator.hasNext()){
+            Map.Entry<TopicPartition, Long> entry = iterator.next();
+            TopicPartition topicPartition = entry.getKey();
+            Long logSize = entry.getValue();
+//            long offset = consumer.position(topicPartition);
+            OffsetAndMetadata offsetAndMetadata = offsetAndMetadataMap.get(topicPartition);
+            long offset = offsetAndMetadata.offset();
+            int partition = topicPartition.partition();
+            long lag = logSize - offset;
+            OffsetShow offsetShow = new OffsetShow(topic, partition, offset, logSize);
+            offsetShows.add(offsetShow);
+        }
+
+        Collections.sort(offsetShows);
         return offsetShows;
     }
 
     public Map<String, Long> logSizes(String clusterName, String topic) throws IOException, ExecutionException, InterruptedException {
-        int partitions = topicPartitions(clusterName, topic);
         Map<String, Long> results = new HashMap<>();
+        int partitions = topicPartitions(clusterName, topic);
 
-        Collection<DescribeLogDirsResponse.LogDirInfo> logDirInfos = logDirsInfos(clusterName);
-        for (DescribeLogDirsResponse.LogDirInfo logDirInfo : logDirInfos) {
-            Map<TopicPartition, DescribeLogDirsResponse.ReplicaInfo> replicaInfos = logDirInfo.replicaInfos;
-            for (int i = 0; i < partitions; i++) {
-                TopicPartition topicPartition = new TopicPartition(topic, i);
-                DescribeLogDirsResponse.ReplicaInfo replicaInfo = replicaInfos.get(topicPartition);
-                long size = replicaInfo.size;
-                results.put(i+"",size);
-            }
+        Properties properties = kafkaProperties(clusterName);
+        KafkaConsumer<byte[], byte[]> consumer = new KafkaConsumer<>(properties);
+
+        List<TopicPartition> topicPartitions = new ArrayList<>();
+        for (int i = 0; i < partitions; i++) {
+            topicPartitions.add(new TopicPartition(topic,i));
+        }
+
+        Map<TopicPartition, Long> topicPartitionLongMap = consumer.endOffsets(topicPartitions);
+        Iterator<Map.Entry<TopicPartition, Long>> iterator = topicPartitionLongMap.entrySet().iterator();
+        while (iterator.hasNext()){
+            Map.Entry<TopicPartition, Long> entry = iterator.next();
+            TopicPartition topicPartition = entry.getKey();
+            Long logSize = entry.getValue();
+
+            results.put(topicPartition.partition()+"",logSize);
         }
 
         return results;
@@ -377,18 +399,18 @@ public class KafkaServlet extends BaseServlet{
         return datas;
     }
 
-    private Collection<DescribeLogDirsResponse.LogDirInfo> logDirsInfos(String clusterName) throws IOException, InterruptedException, ExecutionException {
-        AdminClient adminClient = loadAdminClient(clusterName);
-
-        Map<String, String> brokers = brokers(readConfig(clusterName));
-        List<String> brokerIds = new ArrayList<>(brokers.keySet());
-        Integer firstBrokerId = NumberUtil.toInt(brokerIds.get(0));
-
-        DescribeLogDirsResult describeLogDirsResult = adminClient.describeLogDirs(Collections.singletonList(firstBrokerId));
-        Map<Integer, KafkaFuture<Map<String, DescribeLogDirsResponse.LogDirInfo>>> values = describeLogDirsResult.values();
-        Map<String, DescribeLogDirsResponse.LogDirInfo> stringLogDirInfoMap = values.get(firstBrokerId).get();
-        return stringLogDirInfoMap.values();
-    }
+//    private Collection<DescribeLogDirsResponse.LogDirInfo> logDirsInfosxxx(String clusterName) throws IOException, InterruptedException, ExecutionException {
+//        AdminClient adminClient = loadAdminClient(clusterName);
+//
+//        Map<String, String> brokers = brokers(readConfig(clusterName));
+//        List<String> brokerIds = new ArrayList<>(brokers.keySet());
+//        Integer firstBrokerId = NumberUtil.toInt(brokerIds.get(0));
+//
+//        DescribeLogDirsResult describeLogDirsResult = adminClient.describeLogDirs(Collections.singletonList(firstBrokerId));
+//        Map<Integer, KafkaFuture<Map<String, DescribeLogDirsResponse.LogDirInfo>>> values = describeLogDirsResult.values();
+//        Map<String, DescribeLogDirsResponse.LogDirInfo> stringLogDirInfoMap = values.get(firstBrokerId).get();
+//        return stringLogDirInfoMap.values();
+//    }
 
     static Pattern ipPort = Pattern.compile("(\\d+\\.\\d+\\.\\d+\\.\\d+):(\\d+)");
     private Map<String,String> brokers(KafkaConnInfo kafkaConnInfo) throws IOException {

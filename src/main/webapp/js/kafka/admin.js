@@ -4,8 +4,10 @@ define(['util','dialog','icheck','jsonview'],function (util,dialog) {
         topics:'/kafka/topics',
         logSizes:'/kafka/logSizes',
         create:'/kafka/createTopic',
-        drop:'/kafka/deleteTopic'
-
+        drop:'/kafka/deleteTopic',
+        lastDatas: '/kafka/lastDatas',
+        nearbyDatas:'/kafka/nearbyDatas',
+        serializes:'/zk/serializes'
     }
     kafkaAdmin.init = function () {
         bindEvents();
@@ -16,6 +18,14 @@ define(['util','dialog','icheck','jsonview'],function (util,dialog) {
         $('#adminconn>a>span').text(kafkaAdmin.conn).attr('conn',kafkaAdmin.conn);
 
         loadTopics();
+
+        //加载序列化工具列表
+        util.requestData(apis.serializes,function (serializes) {
+            $('#serializeTools').empty();
+            for (var i = 0; i < serializes.length; i++) {
+                $('#serializeTools').append('<option value="' + serializes[i] + '">' + serializes[i] + '</option>');
+            }
+        });
         return this;
     }
 
@@ -35,14 +45,71 @@ define(['util','dialog','icheck','jsonview'],function (util,dialog) {
         });
     }
 
+    function openDataDialog(partition,offset,btnName) {
+        //调用接口选择
+        var switchApi = apis.nearbyDatas;
+        if(btnName == 'lastdata'){
+            switchApi = apis.lastDatas;
+        }
+        var topic = $('#topicname').data('topic');
+        var serialize = $('#serializeTools').val();
+        util.requestData(switchApi,{clusterName:kafkaAdmin.conn,topic:topic,partition:partition,offset:offset,serialize:serialize},function (datas) {
+            var $tbody = $('#datadetail').find('tbody').empty();
+            for(var offset in datas){
+                var btn = '<button type="button" class="btn btn-sm btn-primary"><i class="fa fa-book"></i> JSON </button>';
+                $tbody.append('<tr offset="'+offset+'"><td>'+btn+'</td><td>'+offset+'</td><td>'+datas[offset]+'</td></tr>');
+            }
+
+            var buildDialog = dialog.create('显示topic['+topic+']partition['+partition+']offset['+offset+']附近['+btnName+']的数据')
+                .setWidthHeight('90%','90%')
+                .setContent($('#showdataDialog'));
+            buildDialog.build();
+        });
+    }
+
     function bindEvents() {
         var events = [{selector:'#createTopic',types:['click'],handler:createTopic},
             {parent:'#topics',selector:'.list-group-item',types:['click'],handler:showTopicDetail},
             {parent:'#topics',selector:'.list-group-item>a',types:['click'],handler:deleteTopic},
             {selector:'#refreshlogsize',types:['click'],handler:refreshLogSize},
-            {selector:'#createdata',types:['click'],handler:createData} ];
+            {selector:'#createdata',types:['click'],handler:createData},
+            {parent:'#topicdetail',selector:'button[name=lastdata],button[name=nearbyData]',types:['click'],handler:showdata},
+            {selector:'#serializeTools',types:['change'],handler:changeSerialize},
+            {parent:'#datadetail',selector:'button',types:['click'],handler:jsonView}];
+
         util.regPageEvents(events);
 
+        function jsonView() {
+            var offset = $(this).closest('tr').attr('offset');
+            var json = $(this).parent().siblings('td:last').text();
+            // $('#jsonViewLoad').text(json);
+
+            dialog.create('offset:'+offset +' 的数据')
+                .setWidthHeight('500px','500px')
+                .setContent($('#jsonView'))
+                .onOpen(loadJsonData)
+                .build();
+
+            function loadJsonData() {
+                require(['jsonview'],function () {
+                    $('#jsonViewLoad').JSONView(json);
+                });
+
+            }
+        }
+
+        function changeSerialize() {
+            openDataDialog(openDataDialog.partition,0,openDataDialog.btnName);
+        }
+        function showdata() {
+            var partition = $(this).closest('tr').attr('partition');
+            var offset = 0;
+            var btnName = $(this).attr('name');
+            openDataDialog.partition = partition;
+            openDataDialog.btnName = btnName;
+            openDataDialog(partition,offset,btnName);
+        }
+        
         function refreshLogSize() {
             var topic = $('#topics').find('div.list-group-item.active').attr('topic');
             renderTopicPartitions(topic);
@@ -102,8 +169,9 @@ define(['util','dialog','icheck','jsonview'],function (util,dialog) {
                 $('#topicname').data('partitions', partitions);
 
                 var dateFormat = util.FormatUtil.dateFormat(new Date().getTime(), 'yyyy-MM-dd HH:mm:ss');
+                var $btnGroup = '<div class="btn-group btn-group-sm"><button class="btn btn-sm btn-success" name="nearbyData">附近数据</button><button class="btn btn-sm btn-warning" name="lastdata">尾部数据</button></div>';
                 for (var key in logSizes) {
-                    htmlCode.push('<tr partition="'+key+'"><td>' + key + '</td><td>' + logSizes[key] + '</td><td>' + (dateFormat) + '</td></tr>')
+                    htmlCode.push('<tr partition="'+key+'"><td>' + key + '</td><td>' + logSizes[key] + '</td><td>' + (dateFormat) + '</td><td>'+$btnGroup+'</td></tr>')
                 }
                 $tbody.append(htmlCode.join(''));
 

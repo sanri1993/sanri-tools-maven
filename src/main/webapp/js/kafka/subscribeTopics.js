@@ -39,6 +39,39 @@ define(['util','dialog','icheck'],function(util,dialog){
         });
     }
 
+    /**
+     * 附近数据展示
+     */
+    function showdata() {
+        //获取暂存数据
+        var $form = $('#serializeTools').closest('form');
+        var btnName = $form.data('btnName');
+        var partition = $form.data('partition');
+        var offset = $form.data('offset');
+
+        //获取公共数据
+        var conn = subscribeTopics.conn;
+        var topic = $('#monitorOffset').data('topic');
+
+        //获取选择数据
+        var serialize = $(this).val();
+
+        //调用接口选择
+        var switchApi = apis.nearbyDatas;
+        if(btnName == 'lastdata'){
+            switchApi = apis.lastDatas;
+        }
+
+        util.requestData(switchApi,{clusterName:conn,topic:topic,partition:partition,offset:offset,serialize:serialize},function (datas) {
+            // $('#datadetail').html(data.join('<br/>'));
+            var $tbody = $('#datadetail').find('tbody').empty();
+            for(var offset in datas){
+                var btn = '<button type="button" class="btn btn-sm btn-primary"><i class="fa fa-book"></i> JSON </button>';
+                $tbody.append('<tr offset="'+offset+'"><td>'+btn+'</td><td>'+offset+'</td><td>'+datas[offset]+'</td></tr>');
+            }
+        });
+    }
+
     function bindEvents() {
         var events = [
             {parent:'#topictable',selector:'a',types:['click'],handler:topicDetail},
@@ -70,39 +103,6 @@ define(['util','dialog','icheck'],function(util,dialog){
             }
         }
 
-        /**
-         * 附近数据展示
-         */
-        function showdata() {
-            //获取暂存数据
-            var $form = $('#serializeTools').closest('form');
-            var btnName = $form.data('btnName');
-            var partition = $form.data('partition');
-            var offset = $form.data('offset');
-
-            //获取公共数据
-            var conn = subscribeTopics.conn;
-            var topic = $('#monitorOffset').data('topic');
-
-            //获取选择数据
-            var serialize = $(this).val();
-
-            //调用接口选择
-            var switchApi = apis.nearbyDatas;
-            if(btnName == 'lastdata'){
-                switchApi = apis.lastDatas;
-            }
-
-            util.requestData(switchApi,{clusterName:conn,topic:topic,partition:partition,offset:offset,serialize:serialize},function (datas) {
-               // $('#datadetail').html(data.join('<br/>'));
-                var $tbody = $('#datadetail').find('tbody').empty();
-                for(var offset in datas){
-                    var btn = '<button type="button" class="btn btn-sm btn-primary"><i class="fa fa-book"></i> JSON </button>';
-                    $tbody.append('<tr offset="'+offset+'"><td>'+btn+'</td><td>'+offset+'</td><td>'+datas[offset]+'</td></tr>');
-                }
-            });
-        }
-        
         function loadSerializes() {
             //使用 form 来记住部分数据
             var $tr = $(this).closest('tr');

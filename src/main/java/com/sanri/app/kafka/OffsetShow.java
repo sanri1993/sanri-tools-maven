@@ -3,7 +3,7 @@ package com.sanri.app.kafka;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-public class OffsetShow {
+public class OffsetShow implements Comparable<OffsetShow>{
 	private String topic;
 	private int partition;
 	private long offset;
@@ -78,5 +78,9 @@ public class OffsetShow {
 		this.minOffset = minOffset;
 	}
 
-	
+
+	@Override
+	public int compareTo(OffsetShow o) {
+		return this.partition - o.partition;
+	}
 }
