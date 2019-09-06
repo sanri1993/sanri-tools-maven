@@ -42,7 +42,7 @@ public class RandomUtil extends RandomStringUtils {
 			URI addressURI = resource.resolve(new URI("data/address.string"));
 			URI citylistURI = resource.resolve(new URI("data/city.min.json"));
 			URI idcodeURI = resource.resolve(new URI("data/idcodearea.json"));
-			URI jobURI = resource.resolve(new URI("data/job"));
+			URI jobURI = resource.resolve(new URI("data/job.string"));
 
 			ADDRESS_LIST = StringUtils.split(IOUtils.toString(addressURI,charset),',');
 			CITY_LIST = JSONObject.parseObject(IOUtils.toString(citylistURI,charset));
