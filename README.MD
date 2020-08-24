@@ -6,6 +6,8 @@ sanri-tools-maven 是一个开源的用于企业开发的工具包，重点想�
 
 博客地址: https://www.cnblogs.com/sanri1993/
 
+github 上的更新会慢于 gitee , 着急的可又跳转自 https://gitee.com/sanri/sanri-tools-maven 查看最新项目进展
+
 ---
 
 ## 工具理念
